@@ -228,21 +228,19 @@ class AboutFragment : ToolbarFragment(R.layout.layout_about) {
                     val release = JSONObject(Util.getStringBox(response.contentString))
                     val releaseName = release.getString("name")
                     val releaseUrl = release.getString("html_url")
-                    var haveUpdate = releaseName.isNotBlank()
-                    haveUpdate = if (isPreview) {
-                        if (checkPreview) {
-                            haveUpdate && releaseName != BuildConfig.PRE_VERSION_NAME
-                        } else {
-                            // User: 1.3.9 pre-1.4.0 Stable: 1.3.9 -> No update
-                            haveUpdate && releaseName != BuildConfig.VERSION_NAME
+                    if (releaseName.isBlank()) {
+                        runOnMainDispatcher {
+                            Toast.makeText(app, R.string.check_update_no, Toast.LENGTH_SHORT).show()
                         }
-                    } else {
-                        // User: 1.4.0 Preview: pre-1.4.0 -> No update
-                        // User: 1.4.0 Preview: pre-1.4.1 -> Update
-                        // User: 1.4.0 Stable: 1.4.0 -> No update
-                        // User: 1.4.0 Stable: 1.4.1 -> Update
-                        haveUpdate && !releaseName.contains(BuildConfig.VERSION_NAME)
+                        return@runOnIoDispatcher
                     }
+                    val currentVer = if (isPreview && checkPreview) {
+                        versionParts(BuildConfig.PRE_VERSION_NAME)
+                    } else {
+                        versionParts(BuildConfig.VERSION_NAME)
+                    }
+                    val remoteVer = versionParts(releaseName)
+                    val haveUpdate = isNewer(currentVer, remoteVer)
                     runOnMainDispatcher {
                         if (haveUpdate) {
                             val context = requireContext()
@@ -272,6 +270,22 @@ class AboutFragment : ToolbarFragment(R.layout.layout_about) {
                     }
                 }
             }
+        }
+
+        private fun versionParts(version: String): List<Int> {
+            return version.trimStart('v').trimStart('V')
+                .removePrefix("pre-").removePrefix("pre")
+                .split(Regex("[.\\-]"))
+                .map { it.toIntOrNull() ?: 0 }
+        }
+
+        private fun isNewer(current: List<Int>, remote: List<Int>): Boolean {
+            for (i in 0 until maxOf(current.size, remote.size)) {
+                val c = current.getOrElse(i) { 0 }
+                val r = remote.getOrElse(i) { 0 }
+                if (r != c) return r > c
+            }
+            return false
         }
 
     }

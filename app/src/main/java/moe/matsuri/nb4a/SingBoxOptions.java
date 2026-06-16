@@ -113,6 +113,8 @@ public class SingBoxOptions {
 
         public List<SingBoxOption> outbounds;
 
+        public List<SingBoxOption> endpoints;
+
         public RouteOptions route;
 
         public ExperimentalOptions experimental;
@@ -2712,6 +2714,8 @@ public class SingBoxOptions {
 
     public static class WireGuardOutboundOptions extends SingBoxOption {
 
+        public String type;
+
         // Generate note: nested type DialerOptions
         public String detour;
 
@@ -2748,6 +2752,7 @@ public class SingBoxOptions {
         public String interface_name;
 
         // Generate note: Listable
+        @SerializedName("address")
         public List<String> local_address;
 
         public String private_key;
@@ -2779,8 +2784,10 @@ public class SingBoxOptions {
     public static class WireGuardPeer extends SingBoxOption {
 
         // Generate note: nested type ServerOptions
+        @SerializedName("address")
         public String server;
 
+        @SerializedName("port")
         public Integer server_port;
 
         // End of public ServerOptions ;

@@ -1,7 +1,6 @@
 package io.nekohasekai.sagernet.bg.proto
 
 import android.os.SystemClock
-import io.nekohasekai.sagernet.SagerNet
 import io.nekohasekai.sagernet.bg.AbstractInstance
 import io.nekohasekai.sagernet.bg.GuardedProcessPool
 import io.nekohasekai.sagernet.database.DataStore
@@ -27,6 +26,8 @@ import java.io.File
 abstract class BoxInstance(
     val profile: ProxyEntity
 ) : AbstractInstance {
+
+    private val closeScope = CoroutineScope(Job() + Dispatchers.IO)
 
     lateinit var config: ConfigBuildResult
     lateinit var box: BoxInstance
@@ -54,6 +55,8 @@ abstract class BoxInstance(
 
     open suspend fun init() {
         buildConfig()
+        // Prepare cache directory for plugin configs
+        File(app.cacheDir, "tmpcfg").mkdirs()
         for ((chain) in config.externalIndex) {
             chain.entries.forEachIndexed { index, (port, profile) ->
                 when (val bean = profile.requireBean()) {
@@ -90,10 +93,7 @@ abstract class BoxInstance(
     }
 
     override fun launch() {
-        // TODO move, this is not box
-        val cacheDir = File(SagerNet.application.cacheDir, "tmpcfg")
-        cacheDir.mkdirs()
-
+        val cacheDir = File(app.cacheDir, "tmpcfg")
         for ((chain) in config.externalIndex) {
             chain.entries.forEachIndexed { index, (port, profile) ->
                 val bean = profile.requireBean()
@@ -212,7 +212,7 @@ abstract class BoxInstance(
 
         cacheFiles.removeAll { it.delete(); true }
 
-        if (::processes.isInitialized) processes.close(GlobalScope + Dispatchers.IO)
+        if (::processes.isInitialized) processes.close(closeScope)
 
         if (::box.isInitialized) {
             box.close()

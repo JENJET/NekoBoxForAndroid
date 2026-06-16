@@ -187,6 +187,12 @@ class MainActivity : ThemedActivity(),
         if (name.isNullOrBlank()) return
 
         group.name = group.name.takeIf { !it.isNullOrBlank() }
+            ?: group.subscription?.link?.let { link ->
+                try {
+                    java.net.URL(link).host?.split(".")?.takeIf { it.size >= 2 }
+                        ?.let { parts -> parts[(parts.size - 1) / 2].replaceFirstChar { it.uppercase() } }
+                } catch (_: Exception) { null }
+            }
             ?: ("Subscription #" + System.currentTimeMillis())
 
         onMainDispatcher {
@@ -420,6 +426,9 @@ class MainActivity : ThemedActivity(),
         runOnDefaultDispatcher {
             ProfileManager.postUpdate(old, true)
             ProfileManager.postUpdate(id, true)
+        }
+        if (DataStore.serviceState.connected) {
+            binding.stats.refreshServerInfo()
         }
     }
 

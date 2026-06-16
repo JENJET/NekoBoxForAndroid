@@ -38,10 +38,8 @@ abstract class GroupUpdater {
 
     protected suspend fun forceResolve(
         profiles: List<AbstractBean>, groupId: Long?
-    ) {
+    ) = coroutineScope {
         val ipv6Mode = DataStore.ipv6Mode
-        val lookupPool = newFixedThreadPoolContext(5, "DNS Lookup")
-        val lookupJobs = mutableListOf<Job>()
         val progress = Progress(profiles.size)
         if (groupId != null) {
             GroupUpdater.progress[groupId] = progress
@@ -57,7 +55,7 @@ abstract class GroupUpdater {
 
             if (profile.serverAddress.isIpAddress()) continue
 
-            lookupJobs.add(GlobalScope.launch(lookupPool) {
+            launch(Dispatchers.IO) {
                 try {
                     val results = if (
                         SagerNet.underlyingNetwork != null &&
@@ -65,12 +63,10 @@ abstract class GroupUpdater {
                         DataStore.serviceState.started &&
                         DataStore.serviceMode == Key.MODE_VPN
                     ) {
-                        // FakeDNS
                         SagerNet.underlyingNetwork!!
                             .getAllByName(profile.serverAddress)
                             .filterNotNull()
                     } else {
-                        // System DNS is enough (when VPN connected, it uses v2ray-core)
                         InetAddress.getAllByName(profile.serverAddress).filterNotNull()
                     }
                     if (results.isEmpty()) error("empty response")
@@ -82,11 +78,8 @@ abstract class GroupUpdater {
                     progress.progress++
                     GroupManager.postReload(groupId)
                 }
-            })
+            }
         }
-
-        lookupJobs.joinAll()
-        lookupPool.close()
     }
 
     protected fun rewriteAddress(
@@ -149,6 +142,7 @@ abstract class GroupUpdater {
 
                 try {
                     RawUpdater.doUpdate(proxyGroup, subscription, userInterface, byUser)
+                    io.nekohasekai.sagernet.widget.StatsBar.clearGeoIPCacheForGroup(proxyGroup.id)
                     true
                 } catch (e: Throwable) {
                     Logs.w(e)

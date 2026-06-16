@@ -19,9 +19,9 @@ object Protocols {
 
         fun hash(): String {
             if (bean is ConfigBean) {
-                return bean.config
+                return bean.config + bean.type
             }
-            return bean.serverAddress + bean.serverPort + type
+            return bean.hashCode().toString() + type
         }
 
         override fun hashCode(): Int {

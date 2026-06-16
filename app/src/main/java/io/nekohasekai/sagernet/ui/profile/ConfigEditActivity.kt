@@ -165,6 +165,7 @@ class ConfigEditActivity : ThemedActivity() {
         }
     }
 
+    @Suppress("DEPRECATION")
     override fun onBackPressed() {
         if (dirty) UnsavedChangesDialogFragment().apply { key() }
             .show(supportFragmentManager, null) else super.onBackPressed()

@@ -149,7 +149,7 @@ class VpnService : BaseVpnService(),
                 }
             }
             if (proxyApps) {
-                individual.addAll(DataStore.individual.split('\n').filter { it.isNotBlank() })
+                individual.addAll(DataStore.individual.split('\n').map { it.trim() }.filter { it.isNotBlank() })
                 if (bypass && needBypassRootUid) {
                     val individualNew = allApps.toMutableList()
                     individualNew.removeAll(individual)

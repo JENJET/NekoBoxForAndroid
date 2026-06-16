@@ -6,17 +6,17 @@ import android.graphics.Color
 import android.os.Bundle
 import android.os.SystemClock
 import android.provider.OpenableColumns
-import android.text.SpannableStringBuilder
-import android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+import android.text.InputType
 import android.text.format.Formatter
-import android.text.style.ForegroundColorSpan
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.widget.PopupMenu
@@ -52,7 +52,6 @@ import io.nekohasekai.sagernet.database.ProxyGroup
 import io.nekohasekai.sagernet.database.SagerDatabase
 import io.nekohasekai.sagernet.database.preference.OnPreferenceDataStoreChangeListener
 import io.nekohasekai.sagernet.databinding.LayoutProfileListBinding
-import io.nekohasekai.sagernet.databinding.LayoutProgressListBinding
 import io.nekohasekai.sagernet.fmt.AbstractBean
 import io.nekohasekai.sagernet.fmt.toUniversalLink
 import io.nekohasekai.sagernet.group.GroupUpdater
@@ -92,11 +91,13 @@ import io.nekohasekai.sagernet.ui.profile.VMessSettingsActivity
 import io.nekohasekai.sagernet.ui.profile.WireGuardSettingsActivity
 import io.nekohasekai.sagernet.widget.QRCodeDialog
 import io.nekohasekai.sagernet.widget.UndoSnackbarManager
+import io.nekohasekai.sagernet.ui.ConfigurationTestDialog
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.joinAll
+import moe.matsuri.nb4a.ui.ConnectionTestNotification
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -105,14 +106,11 @@ import moe.matsuri.nb4a.Protocols.getProtocolColor
 import moe.matsuri.nb4a.proxy.anytls.AnyTLSSettingsActivity
 import moe.matsuri.nb4a.proxy.config.ConfigSettingActivity
 import moe.matsuri.nb4a.proxy.shadowtls.ShadowTLSSettingsActivity
-import moe.matsuri.nb4a.ui.ConnectionTestNotification
 import okhttp3.internal.closeQuietly
 import java.net.InetSocketAddress
 import java.net.Socket
 import java.net.UnknownHostException
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.atomic.AtomicInteger
 import java.util.zip.ZipInputStream
 
 class ConfigurationFragment @JvmOverloads constructor(
@@ -132,10 +130,12 @@ class ConfigurationFragment @JvmOverloads constructor(
     lateinit var groupPager: ViewPager2
 
     val alwaysShowAddress by lazy { DataStore.alwaysShowAddress }
+    val pingTestingIds = mutableSetOf<Long>()
+    val urlTestingIds = mutableSetOf<Long>()
 
-    fun getCurrentGroupFragment(): GroupFragment? {
+    fun getCurrentGroupFragment(): ProfileListGroupFragment? {
         return try {
-            childFragmentManager.findFragmentByTag("f" + DataStore.selectedGroup) as GroupFragment?
+            childFragmentManager.findFragmentByTag("f" + DataStore.selectedGroup) as ProfileListGroupFragment?
         } catch (e: Exception) {
             Logs.e(e)
             null
@@ -371,6 +371,43 @@ class ConfigurationFragment @JvmOverloads constructor(
                 }
             }
 
+            R.id.action_import_url -> {
+                val linearLayout = LinearLayout(requireContext())
+                val editText = EditText(requireContext())
+                editText.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE or InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
+                val ta = requireContext().theme.obtainStyledAttributes(intArrayOf(android.R.attr.dialogPreferredPadding))
+                val p = ta.getDimensionPixelSize(0, 0)
+                ta.recycle()
+                linearLayout.setPadding(p, 0, p, 0)
+                linearLayout.addView(editText, LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ))
+                MaterialAlertDialogBuilder(requireContext())
+                    .setTitle(R.string.action_import_url)
+                    .setView(linearLayout)
+                    .setPositiveButton(android.R.string.ok) { _, _ ->
+                        val url = editText.text.toString().trim()
+                        if (url.isNotBlank()) runOnDefaultDispatcher {
+                            try {
+                                val proxies = RawUpdater.parseRaw(url)
+                                if (proxies.isNullOrEmpty()) onMainDispatcher {
+                                    snackbar(getString(R.string.no_proxies_found_in_subscription)).show()
+                                } else import(proxies)
+                            } catch (e: SubscriptionFoundException) {
+                                (requireActivity() as MainActivity).importSubscription(e.link.toUri())
+                            } catch (e: Exception) {
+                                Logs.w(e)
+                                onMainDispatcher {
+                                    snackbar(e.readableMessage).show()
+                                }
+                            }
+                        }
+                    }
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .show()
+            }
+
             R.id.action_import_file -> {
                 startFilesForResult(importFile, "*/*")
             }
@@ -479,10 +516,14 @@ class ConfigurationFragment @JvmOverloads constructor(
                     val profiles = SagerDatabase.proxyDao.getByGroup(DataStore.currentGroupId())
                     val toClear = mutableListOf<ProxyEntity>()
                     if (profiles.isNotEmpty()) for (profile in profiles) {
-                        if (profile.status != 0) {
+                        val hasResults = profile.status != 0 || profile.urlTestStatus != 0
+                        if (hasResults) {
                             profile.status = 0
                             profile.ping = 0
                             profile.error = null
+                            profile.urlTestStatus = 0
+                            profile.urlTestPing = 0
+                            profile.urlTestError = null
                             toClear.add(profile)
                         }
                     }
@@ -594,124 +635,48 @@ class ConfigurationFragment @JvmOverloads constructor(
         return true
     }
 
-    inner class TestDialog {
-        val binding = LayoutProgressListBinding.inflate(layoutInflater)
-        val builder = MaterialAlertDialogBuilder(requireContext()).setView(binding.root)
-            .setPositiveButton(R.string.minimize) { _, _ ->
-                minimize()
-            }
-            .setNegativeButton(android.R.string.cancel) { _, _ ->
-                cancel()
-            }
-            .setCancelable(false)
-
-        lateinit var cancel: () -> Unit
-        lateinit var minimize: () -> Unit
-
-        val dialogStatus = AtomicInteger(0) // 1: hidden 2: cancelled
-        var notification: ConnectionTestNotification? = null
-
-        val results: MutableSet<ProxyEntity> = ConcurrentHashMap.newKeySet()
-        var proxyN = 0
-        val finishedN = AtomicInteger(0)
-
-        fun update(profile: ProxyEntity) {
-            if (dialogStatus.get() != 2) {
-                results.add(profile)
-            }
-            runOnMainDispatcher {
-                val context = context ?: return@runOnMainDispatcher
-                val progress = finishedN.addAndGet(1)
-                val status = dialogStatus.get()
-                notification?.updateNotification(
-                    progress,
-                    proxyN,
-                    progress >= proxyN || status == 2
-                )
-                if (status >= 1) return@runOnMainDispatcher
-                if (!isAdded) return@runOnMainDispatcher
-
-                // refresh dialog
-
-                var profileStatusText: String? = null
-                var profileStatusColor = 0
-
-                when (profile.status) {
-                    -1 -> {
-                        profileStatusText = profile.error
-                        profileStatusColor = context.getColorAttr(android.R.attr.textColorSecondary)
-                    }
-
-                    0 -> {
-                        profileStatusText = getString(R.string.connection_test_testing)
-                        profileStatusColor = context.getColorAttr(android.R.attr.textColorSecondary)
-                    }
-
-                    1 -> {
-                        profileStatusText = getString(R.string.available, profile.ping)
-                        profileStatusColor = context.getColour(R.color.material_green_500)
-                    }
-
-                    2 -> {
-                        profileStatusText = profile.error
-                        profileStatusColor = context.getColour(R.color.material_red_500)
-                    }
-
-                    3 -> {
-                        val err = profile.error ?: ""
-                        val msg = Protocols.genFriendlyMsg(err)
-                        profileStatusText = if (msg != err) msg else getString(R.string.unavailable)
-                        profileStatusColor = context.getColour(R.color.material_red_500)
-                    }
-                }
-
-                val text = SpannableStringBuilder().apply {
-                    append("\n" + profile.displayName())
-                    append("\n")
-                    append(
-                        profile.displayType(),
-                        ForegroundColorSpan(context.getProtocolColor(profile.type)),
-                        SPAN_EXCLUSIVE_EXCLUSIVE
-                    )
-                    append(" ")
-                    append(
-                        profileStatusText,
-                        ForegroundColorSpan(profileStatusColor),
-                        SPAN_EXCLUSIVE_EXCLUSIVE
-                    )
-                    append("\n")
-                }
-
-                binding.nowTesting.text = text
-                binding.progress.text = "$progress / $proxyN"
-            }
-        }
-
-    }
-
     @OptIn(DelicateCoroutinesApi::class)
     @Suppress("EXPERIMENTAL_API_USAGE")
     fun pingTest(icmpPing: Boolean) {
         if (DataStore.runningTest) return else DataStore.runningTest = true
-        val test = TestDialog()
+        val test = ConfigurationTestDialog(this)
         val dialog = test.builder.show()
-        val testJobs = mutableListOf<Job>()
+        dialog.hide()
         val group = DataStore.currentGroup()
+        test.dialogStatus.set(1)
+        test.notification = ConnectionTestNotification(
+            requireContext(),
+            "[${group.displayName()}] ${getString(R.string.connection_test)}"
+        )
+        val testJobs = mutableListOf<Job>()
 
         val mainJob = runOnDefaultDispatcher {
             val profilesList = SagerDatabase.proxyDao.getByGroup(group.id).filter {
                 if (icmpPing) {
-                    if (it.requireBean().canICMPing()) {
-                        return@filter true
-                    }
+                    if (it.requireBean().canICMPing()) { return@filter true }
                 } else {
-                    if (it.requireBean().canTCPing()) {
-                        return@filter true
-                    }
+                    if (it.requireBean().canTCPing()) { return@filter true }
                 }
                 return@filter false
             }
             test.proxyN = profilesList.size
+            urlTestingIds.clear()
+            pingTestingIds.clear()
+            for (profile in profilesList) {
+                profile.status = 0
+                profile.error = null
+                profile.urlTestStatus = 0
+                profile.urlTestPing = 0
+                profile.urlTestError = null
+                pingTestingIds.add(profile.id)
+            }
+            val adapter = getCurrentAdapter()
+            adapter?.let { a ->
+                for (profile in profilesList) {
+                    a.configurationList[profile.id] = profile
+                    a.refreshProfileItem(profile.id)
+                }
+            }
             val profiles = ConcurrentLinkedQueue(profilesList)
             repeat(DataStore.connectionTestConcurrent) {
                 testJobs.add(launch(Dispatchers.IO) {
@@ -734,6 +699,9 @@ class ConfigurationFragment @JvmOverloads constructor(
                         if (!address.isIpAddress()) {
                             profile.status = 2
                             profile.error = app.getString(R.string.connection_test_domain_not_found)
+                            pingTestingIds.remove(profile.id)
+                            adapter?.configurationList?.put(profile.id, profile)
+                            adapter?.refreshProfileItem(profile.id)
                             test.update(profile)
                             continue
                         }
@@ -756,6 +724,9 @@ class ConfigurationFragment @JvmOverloads constructor(
                                     if (!isActive) break
                                     profile.status = 1
                                     profile.ping = (SystemClock.elapsedRealtime() - start).toInt()
+                                    pingTestingIds.remove(profile.id)
+                                    adapter?.configurationList?.put(profile.id, profile)
+                                    adapter?.refreshProfileItem(profile.id)
                                     test.update(profile)
                                 } finally {
                                     socket.closeQuietly()
@@ -792,6 +763,9 @@ class ConfigurationFragment @JvmOverloads constructor(
                                     }
                                 }
                             }
+                            pingTestingIds.remove(profile.id)
+                            adapter?.configurationList?.put(profile.id, profile)
+                            adapter?.refreshProfileItem(profile.id)
                             test.update(profile)
                         }
                     }
@@ -821,47 +795,74 @@ class ConfigurationFragment @JvmOverloads constructor(
                 DataStore.runningTest = false
             }
         }
-        test.minimize = {
-            test.dialogStatus.set(1)
-            test.notification = ConnectionTestNotification(
-                dialog.context,
-                "[${group.displayName()}] ${getString(R.string.connection_test)}"
-            )
-            dialog.hide()
-        }
+        test.minimize = {}
+    }
+
+    private fun getCurrentAdapter(): ProfileListGroupFragment.ConfigurationAdapter? {
+        val pagerAdapter = groupPager.adapter as? GroupPagerAdapter ?: return null
+        val groupId = DataStore.currentGroupId()
+        val fragment = pagerAdapter.groupFragments[groupId] ?: return null
+        return fragment.adapter
     }
 
     @OptIn(DelicateCoroutinesApi::class)
     fun urlTest() {
         if (DataStore.runningTest) return else DataStore.runningTest = true
-        val test = TestDialog()
+        val test = ConfigurationTestDialog(this)
         val dialog = test.builder.show()
-        val testJobs = mutableListOf<Job>()
+        dialog.hide()
         val group = DataStore.currentGroup()
+        test.dialogStatus.set(1)
+        test.notification = ConnectionTestNotification(
+            requireContext(),
+            "[${group.displayName()}] ${getString(R.string.connection_test)}"
+        )
+        val testJobs = mutableListOf<Job>()
 
         val mainJob = runOnDefaultDispatcher {
             val profilesList = SagerDatabase.proxyDao.getByGroup(group.id)
             test.proxyN = profilesList.size
             val profiles = ConcurrentLinkedQueue(profilesList)
+            val adapter = getCurrentAdapter()
+
+            pingTestingIds.clear()
+            for (profile in profilesList) {
+                profile.urlTestStatus = 0
+                profile.urlTestPing = 0
+                profile.urlTestError = null
+                profile.status = 0
+                profile.ping = 0
+                profile.error = null
+                urlTestingIds.add(profile.id)
+            }
+            adapter?.let { a ->
+                for (profile in profilesList) {
+                    a.configurationList[profile.id] = profile
+                    a.refreshProfileItem(profile.id)
+                }
+            }
+
             repeat(DataStore.connectionTestConcurrent) {
                 testJobs.add(launch(Dispatchers.IO) {
                     val urlTest = UrlTest() // note: this is NOT in bg process
                     while (isActive) {
                         val profile = profiles.poll() ?: break
-                        profile.status = 0
 
                         try {
                             val result = urlTest.doTest(profile)
-                            profile.status = 1
-                            profile.ping = result
+                            profile.urlTestStatus = 1
+                            profile.urlTestPing = result
                         } catch (e: PluginManager.PluginNotFoundException) {
-                            profile.status = 2
-                            profile.error = e.readableMessage
+                            profile.urlTestStatus = 2
+                            profile.urlTestError = e.readableMessage
                         } catch (e: Exception) {
-                            profile.status = 3
-                            profile.error = e.readableMessage
+                            profile.urlTestStatus = 3
+                            profile.urlTestError = e.readableMessage
                         }
 
+                        urlTestingIds.remove(profile.id)
+                        adapter?.configurationList?.put(profile.id, profile)
+                        adapter?.refreshProfileItem(profile.id)
                         test.update(profile)
                     }
                 })
@@ -879,9 +880,18 @@ class ConfigurationFragment @JvmOverloads constructor(
             runOnDefaultDispatcher {
                 mainJob.cancel()
                 testJobs.forEach { it.cancel() }
-                test.results.forEach {
+                val toSave = test.results.toMutableList()
+                for (id in urlTestingIds) {
+                    val profile = SagerDatabase.proxyDao.getById(id) ?: continue
+                    profile.urlTestStatus = 0
+                    profile.urlTestPing = 0
+                    profile.urlTestError = null
+                    toSave.add(profile)
+                }
+                urlTestingIds.clear()
+                for (p in toSave) {
                     try {
-                        ProfileManager.updateProfile(it)
+                        ProfileManager.updateProfile(p)
                     } catch (e: Exception) {
                         Logs.w(e)
                     }
@@ -906,7 +916,7 @@ class ConfigurationFragment @JvmOverloads constructor(
 
         var selectedGroupIndex = 0
         var groupList: ArrayList<ProxyGroup> = ArrayList()
-        var groupFragments: HashMap<Long, GroupFragment> = HashMap()
+        var groupFragments: HashMap<Long, ProfileListGroupFragment> = HashMap()
 
         fun reload(now: Boolean = false) {
 
@@ -964,7 +974,7 @@ class ConfigurationFragment @JvmOverloads constructor(
         }
 
         override fun createFragment(position: Int): Fragment {
-            return GroupFragment().apply {
+            return ProfileListGroupFragment().apply {
                 proxyGroup = groupList[position]
                 groupFragments[proxyGroup.id] = this
                 if (position == selectedGroupIndex) {
@@ -1034,7 +1044,7 @@ class ConfigurationFragment @JvmOverloads constructor(
         }
     }
 
-    class GroupFragment : Fragment() {
+    class ProfileListGroupFragment : Fragment() {
 
         lateinit var proxyGroup: ProxyGroup
         var selected = false
@@ -1061,6 +1071,7 @@ class ConfigurationFragment @JvmOverloads constructor(
         override fun onViewStateRestored(savedInstanceState: Bundle?) {
             super.onViewStateRestored(savedInstanceState)
 
+            @Suppress("DEPRECATION")
             savedInstanceState?.getParcelable<ProxyGroup>("proxyGroup")?.also {
                 proxyGroup = it
                 onViewCreated(requireView(), null)
@@ -1234,6 +1245,15 @@ class ConfigurationFragment @JvmOverloads constructor(
 
             var configurationIdList: MutableList<Long> = mutableListOf()
             val configurationList = HashMap<Long, ProxyEntity>()
+
+            fun refreshProfileItem(profileId: Long) {
+                val index = configurationIdList.indexOf(profileId)
+                if (index >= 0) {
+                    configurationListView.post {
+                        notifyItemChanged(index)
+                    }
+                }
+            }
 
             private fun getItem(profileId: Long): ProxyEntity {
                 var profile = configurationList[profileId]
@@ -1433,8 +1453,11 @@ class ConfigurationFragment @JvmOverloads constructor(
                     }
 
                     GroupOrder.BY_DELAY -> {
-                        newProfiles =
-                            newProfiles.sortedBy { if (it.status == 1) it.ping else 114514 }
+                        newProfiles = newProfiles.sortedBy {
+                            val ping = if (it.status == 1) it.ping else Int.MAX_VALUE
+                            val url = if (it.urlTestStatus == 1) it.urlTestPing else Int.MAX_VALUE
+                            minOf(ping, url)
+                        }
                     }
                 }
 
@@ -1476,6 +1499,9 @@ class ConfigurationFragment @JvmOverloads constructor(
             val profileName: TextView = view.findViewById(R.id.profile_name)
             val profileType: TextView = view.findViewById(R.id.profile_type)
             val profileAddress: TextView = view.findViewById(R.id.profile_address)
+            val profileUrlTestIcon: ImageView = view.findViewById(R.id.profile_urltest_icon)
+            val profileUrlTestLoading: ProgressBar = view.findViewById(R.id.profile_urltest_loading)
+            val profileUrlTest: TextView = view.findViewById(R.id.profile_urltest)
             val profileStatus: TextView = view.findViewById(R.id.profile_status)
 
             val trafficText: TextView = view.findViewById(R.id.traffic_text)
@@ -1562,34 +1588,53 @@ class ConfigurationFragment @JvmOverloads constructor(
                 (trafficText.parent as View).isGone =
                     (!showTraffic || proxyEntity.status <= 0) && address.isBlank()
 
-                if (proxyEntity.status <= 0) {
-                    if (showTraffic) {
-                        profileStatus.text = trafficText.text
-                        profileStatus.setTextColor(requireContext().getColorAttr(android.R.attr.textColorSecondary))
-                        trafficText.text = ""
-                    } else {
-                        profileStatus.text = ""
-                    }
-                } else if (proxyEntity.status == 1) {
-                    profileStatus.text = getString(R.string.available, proxyEntity.ping)
-                    profileStatus.setTextColor(requireContext().getColour(R.color.material_green_500))
+                // result (shows last executed test)
+                val isLoading = proxyEntity.id in pf.pingTestingIds || proxyEntity.id in pf.urlTestingIds
+                profileUrlTestLoading.isVisible = isLoading
+                val lastType = if (isLoading) {
+                    if (proxyEntity.id in pf.urlTestingIds) 2 else 1
                 } else {
-                    profileStatus.setTextColor(requireContext().getColour(R.color.material_red_500))
-                    if (proxyEntity.status == 2) {
-                        profileStatus.text = proxyEntity.error
+                    if (proxyEntity.urlTestStatus > 0) 2 else if (proxyEntity.status > 0) 1 else 0
+                }
+                val showTest = lastType > 0
+                profileUrlTestIcon.isVisible = !isLoading && showTest
+                profileUrlTest.isVisible = !isLoading && showTest
+
+                if (isLoading) {
+                    profileUrlTest.text = ""
+                } else {
+                    val resultStatus: Int
+                    val resultPing: Int
+                    val resultError: String?
+                    if (lastType == 2) {
+                        profileUrlTestIcon.setImageResource(R.drawable.ic_globe_24)
+                        resultStatus = proxyEntity.urlTestStatus
+                        resultPing = proxyEntity.urlTestPing
+                        resultError = proxyEntity.urlTestError
+                    } else {
+                        profileUrlTestIcon.setImageResource(R.drawable.ic_bolt_24)
+                        resultStatus = proxyEntity.status
+                        resultPing = proxyEntity.ping
+                        resultError = proxyEntity.error
+                    }
+                    if (resultStatus == 1) {
+                        profileUrlTest.text = getString(R.string.available, resultPing)
+                        profileUrlTest.setTextColor(requireContext().getColour(R.color.material_green_500))
+                        profileUrlTest.setOnClickListener(null)
+                    } else if (resultStatus == 2) {
+                        profileUrlTest.text = resultError
+                        profileUrlTest.setTextColor(requireContext().getColour(R.color.material_red_500))
+                        profileUrlTest.setOnClickListener(null)
+                    } else if (resultStatus == 3) {
+                        val err = resultError ?: "<?>"
+                        val msg = Protocols.genFriendlyMsg(err)
+                        profileUrlTest.text = if (msg != err) msg else getString(R.string.unavailable)
+                        profileUrlTest.setTextColor(requireContext().getColour(R.color.material_red_500))
+                        profileUrlTest.setOnClickListener { alert(err).tryToShow() }
                     }
                 }
 
-                if (proxyEntity.status == 3) {
-                    val err = proxyEntity.error ?: "<?>"
-                    val msg = Protocols.genFriendlyMsg(err)
-                    profileStatus.text = if (msg != err) msg else getString(R.string.unavailable)
-                    profileStatus.setOnClickListener {
-                        alert(err).tryToShow()
-                    }
-                } else {
-                    profileStatus.setOnClickListener(null)
-                }
+                profileStatus.isVisible = false
 
                 editButton.setOnClickListener {
                     it.context.startActivity(
@@ -1711,7 +1756,7 @@ class ConfigurationFragment @JvmOverloads constructor(
     }
 
     private val exportConfig =
-        registerForActivityResult(ActivityResultContracts.CreateDocument()) { data ->
+        registerForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { data ->
             if (data != null) {
                 runOnDefaultDispatcher {
                     try {

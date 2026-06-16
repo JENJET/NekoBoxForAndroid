@@ -18,7 +18,9 @@ import androidx.core.util.contains
 import androidx.core.util.set
 import androidx.core.view.ViewCompat
 import androidx.core.widget.addTextChangedListener
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -37,6 +39,7 @@ import io.nekohasekai.sagernet.utils.PackageCache
 import io.nekohasekai.sagernet.widget.ListListener
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.coroutineContext
@@ -174,16 +177,18 @@ class AppListActivity : ThemedActivity() {
     @UiThread
     private fun loadApps() {
         loader?.cancel()
-        loader = lifecycleScope.launchWhenCreated {
-            loading.crossFadeFrom(binding.list)
-            val adapter = binding.list.adapter as AppsAdapter
-            withContext(Dispatchers.IO) { adapter.reload() }
-            adapter.filter.filter(binding.search.text?.toString() ?: "")
-            if (apps.isEmpty()) {
-                binding.list.visibility = View.GONE
-                binding.appPlaceholder.root.crossFadeFrom(loading)
-            } else {
-                binding.list.crossFadeFrom(loading)
+        loader = lifecycleScope.launch {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.CREATED) {
+                loading.crossFadeFrom(binding.list)
+                val adapter = binding.list.adapter as AppsAdapter
+                withContext(Dispatchers.IO) { adapter.reload() }
+                adapter.filter.filter(binding.search.text?.toString() ?: "")
+                if (apps.isEmpty()) {
+                    binding.list.visibility = View.GONE
+                    binding.appPlaceholder.root.crossFadeFrom(loading)
+                } else {
+                    binding.list.crossFadeFrom(loading)
+                }
             }
         }
     }

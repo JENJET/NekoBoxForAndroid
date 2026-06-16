@@ -52,6 +52,12 @@ data class ProxyEntity(
     var rx: Long = 0L,
     var status: Int = 0,
     var ping: Int = 0,
+    @ColumnInfo(defaultValue = "0")
+    var urlTestStatus: Int = 0,
+    @ColumnInfo(defaultValue = "0")
+    var urlTestPing: Int = 0,
+    @ColumnInfo(defaultValue = "NULL")
+    var urlTestError: String? = null,
     var uuid: String = "",
     var error: String? = null,
     var socksBean: SOCKSBean? = null,
@@ -119,7 +125,7 @@ data class ProxyEntity(
     }
 
     override fun serializeToBuffer(output: ByteBufferOutput) {
-        output.writeInt(0)
+        output.writeInt(1)
 
         output.writeLong(id)
         output.writeLong(groupId)
@@ -129,6 +135,9 @@ data class ProxyEntity(
         output.writeLong(rx)
         output.writeInt(status)
         output.writeInt(ping)
+        output.writeInt(urlTestStatus)
+        output.writeInt(urlTestPing)
+        output.writeString(urlTestError)
         output.writeString(uuid)
         output.writeString(error)
 
@@ -150,6 +159,11 @@ data class ProxyEntity(
         rx = input.readLong()
         status = input.readInt()
         ping = input.readInt()
+        if (version >= 1) {
+            urlTestStatus = input.readInt()
+            urlTestPing = input.readInt()
+            urlTestError = input.readString()
+        }
         uuid = input.readString()
         error = input.readString()
         putByteArray(input.readBytes(input.readVarInt(true)))

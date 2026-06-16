@@ -20,7 +20,9 @@ import androidx.core.util.contains
 import androidx.core.util.set
 import androidx.core.view.ViewCompat
 import androidx.core.widget.addTextChangedListener
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -42,6 +44,7 @@ import io.nekohasekai.sagernet.utils.PackageCache
 import io.nekohasekai.sagernet.widget.ListListener
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import moe.matsuri.nb4a.utils.NGUtil
@@ -169,7 +172,8 @@ class AppManagerActivity : ThemedActivity() {
         proxiedUids.clear()
         val apps = cachedApps
         for (line in str.lineSequence()) {
-            val app = (apps[line] ?: continue)
+            val pkg = line.trim()
+            val app = (apps[pkg] ?: continue)
             val uid = app.applicationInfo?.uid ?: continue
             proxiedUids[uid] = true
         }
@@ -180,16 +184,18 @@ class AppManagerActivity : ThemedActivity() {
     @UiThread
     private fun loadApps() {
         loader?.cancel()
-        loader = lifecycleScope.launchWhenCreated {
-            loading.crossFadeFrom(binding.list)
-            val adapter = binding.list.adapter as AppsAdapter
-            withContext(Dispatchers.IO) { adapter.reload() }
-            adapter.filter.filter(binding.search.text?.toString() ?: "")
-            if (apps.isEmpty()) {
-                binding.list.visibility = View.GONE
-                binding.appPlaceholder.root.crossFadeFrom(loading)
-            } else {
-                binding.list.crossFadeFrom(loading)
+        loader = lifecycleScope.launch {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.CREATED) {
+                loading.crossFadeFrom(binding.list)
+                val adapter = binding.list.adapter as AppsAdapter
+                withContext(Dispatchers.IO) { adapter.reload() }
+                adapter.filter.filter(binding.search.text?.toString() ?: "")
+                if (apps.isEmpty()) {
+                    binding.list.visibility = View.GONE
+                    binding.appPlaceholder.root.crossFadeFrom(loading)
+                } else {
+                    binding.list.crossFadeFrom(loading)
+                }
             }
         }
     }
@@ -220,6 +226,7 @@ class AppManagerActivity : ThemedActivity() {
         }
 
         binding.bypassGroup.check(if (DataStore.bypass) R.id.appProxyModeBypass else R.id.appProxyModeOn)
+        @Suppress("DEPRECATION")
         binding.bypassGroup.setOnCheckedChangeListener { _, checkedId ->
             when (checkedId) {
                 R.id.appProxyModeDisable -> {
@@ -340,30 +347,25 @@ class AppManagerActivity : ThemedActivity() {
             .setPositiveButton(R.string.yes) { _, _ ->
                 try {
                     val needProxyAppsList = getAutoProxyApps("")
-                    val bypass = DataStore.bypass
                     proxiedUids.clear()
                     for (app in cachedApps) {
                         val needProxy =
                             needProxyAppsList.contains(app.key) || (app.value.applicationInfo?.uid
                                 ?: 0) == 1000
                         if (needProxy) {
-                            if (!bypass) {
-                                app.value.applicationInfo?.apply {
-                                    proxiedUids[uid] = true
-                                }
-                            }
-                        } else {
-                            if (bypass) {
-                                app.value.applicationInfo?.apply {
-                                    proxiedUids[uid] = true
-                                }
+                            app.value.applicationInfo?.apply {
+                                proxiedUids[uid] = true
                             }
                         }
                     }
                     DataStore.individual =
                         apps.filter { isProxiedApp(it) }.joinToString("\n") { it.packageName }
                     apps = apps.sortedWith(compareBy({ !isProxiedApp(it) }, { it.name.toString() }))
-                    appsAdapter.filter.filter(binding.search.text?.toString() ?: "")
+                    if (!sysApps) {
+                        binding.showSystemApps.isChecked = true
+                    } else {
+                        appsAdapter.filter.filter(binding.search.text?.toString() ?: "")
+                    }
                 } catch (e: Exception) {
                     Logs.e(e)
                 }
@@ -381,7 +383,7 @@ class AppManagerActivity : ThemedActivity() {
                 content
             }
             if (!TextUtils.isEmpty(proxyApps)) {
-                list = proxyApps.split("\n")
+                list = proxyApps.split("\n").map { it.trim() }
             }
         } catch (_: Exception) {
         }

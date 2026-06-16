@@ -67,7 +67,10 @@ object SendLog {
             val len = file.length()
             val stream = FileInputStream(file)
             if (max in 1 until len) {
-                stream.skip(len - max) // TODO string?
+                var remaining = len - max
+                while (remaining > 0) {
+                    remaining -= stream.skip(remaining)
+                }
             }
             stream.use { it.readBytes() }
         } catch (e: Exception) {

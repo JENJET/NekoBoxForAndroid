@@ -63,7 +63,14 @@ class GroupSettingsActivity(
     }
 
     fun ProxyGroup.serialize() {
-        name = DataStore.groupName.takeIf { it.isNotBlank() } ?: "My group"
+        name = DataStore.groupName.takeIf { it.isNotBlank() }
+            ?: DataStore.subscriptionLink?.let { link ->
+                try {
+                    java.net.URL(link).host?.split(".")?.takeIf { it.size >= 2 }
+                        ?.let { parts -> parts[(parts.size - 1) / 2].replaceFirstChar { it.uppercase() } }
+                } catch (_: Exception) { null }
+            }
+            ?: "My group"
         type = DataStore.groupType
         order = DataStore.groupOrder
         isSelector = DataStore.groupIsSelector
@@ -270,6 +277,7 @@ class GroupSettingsActivity(
 
     override fun onOptionsItemSelected(item: MenuItem) = child.onOptionsItemSelected(item)
 
+    @Suppress("DEPRECATION")
     override fun onBackPressed() {
         if (needSave()) {
             UnsavedChangesDialogFragment().apply { key() }.show(supportFragmentManager, null)
