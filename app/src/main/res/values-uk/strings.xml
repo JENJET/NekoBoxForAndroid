@@ -522,4 +522,6 @@
     <string name="padding">Заповнення (Padding)</string>
     <string name="network_change_reset_connections">Скидати вихідні з\'єднання при зміні мережі</string>
     <string name="wake_reset_connections">Скидати вихідні з\'єднання при виході пристрою зі сну</string>
+    <string name="action_import_url">Імпортувати з URL</string>
+    <string name="geoip_api">Адреса тестування інформації про з\'єднання</string>
 </resources>

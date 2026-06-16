@@ -17,4 +17,7 @@
     <string name="menu_about">대하여</string>
     <string name="menu_group">그룹</string>
     <string name="menu_configuration">구성</string>
+    <string name="connection_test_testing">테스트 중…</string>
+    <string name="action_import_url">URL에서 가져오기</string>
+    <string name="geoip_api">연결 정보 테스트 주소</string>
 </resources>

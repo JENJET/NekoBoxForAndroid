@@ -370,4 +370,6 @@
     <string name="copy_package_name">Kopier pakkenavn</string>
     <string name="copy_label">Kopier navn</string>
     <string name="udp_connections">%d UDP-tilkoblinger</string>
+    <string name="action_import_url">Importer fra URL</string>
+    <string name="geoip_api">Tilkoblingsinformasjon testadresse</string>
 </resources>

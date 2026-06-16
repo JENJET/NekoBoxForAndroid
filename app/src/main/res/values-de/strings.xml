@@ -36,4 +36,7 @@
     <string name="list">Liste</string>
     <string name="random">Zufällig</string>
     <string name="enable_log_sum">Für Debugging-Zwecken</string>
+    <string name="connection_test_testing">Teste…</string>
+    <string name="action_import_url">Von URL importieren</string>
+    <string name="geoip_api">Verbindungsinfo-Testadresse</string>
 </resources>

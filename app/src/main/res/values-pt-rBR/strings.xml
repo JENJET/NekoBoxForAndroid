@@ -17,4 +17,7 @@
     <string name="app_desc">Um conjunto de ferramentas de proxy universal para Android, escrito em Kotlin.</string>
     <string name="group_subscription_link">Link de inscrição</string>
     <string name="group_update">Atualizar</string>
+    <string name="connection_test_testing">Testando…</string>
+    <string name="action_import_url">Importar da URL</string>
+    <string name="geoip_api">Endereço de teste de informações de conexão</string>
 </resources>

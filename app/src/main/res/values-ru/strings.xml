@@ -490,5 +490,7 @@
 <string name="ws_max_early_data">Максимальный объём данных</string>
 <string name="ws_path">Путь к WebSocket</string>
 <string name="xtls_flow">Flow (подпротокол VLESS)</string>
-<string name="yes">Да</string>
+    <string name="yes">Да</string>
+    <string name="action_import_url">Импорт из URL</string>
+    <string name="geoip_api">Адрес тестирования информации о соединении</string>
 </resources>

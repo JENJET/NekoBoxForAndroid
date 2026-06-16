@@ -413,4 +413,6 @@
     <string name="backup_summary">如果路由規則不與設定檔一起備份，則自訂出站將丟失。</string>
     <string name="backup_not_file">不是一個備份檔案，預計 .json，但 %s</string>
     <string name="packet_encoding">封包編碼</string>
+    <string name="action_import_url">從URL導入</string>
+    <string name="geoip_api">連線資訊測試地址</string>
 </resources>

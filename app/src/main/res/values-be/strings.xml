@@ -108,4 +108,6 @@
     <string name="menu_about">Пра</string>
     <string name="menu_group">Група</string>
     <string name="menu_configuration">Канфігурацыя</string>
+    <string name="action_import_url">Імпартаваць з URL</string>
+    <string name="geoip_api">Адрас тэсціравання інфармацыі аб злучэнні</string>
 </resources>

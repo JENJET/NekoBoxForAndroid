@@ -8,4 +8,7 @@
     <string name="github">Codice sorgente</string>
     <string name="project">Progetto</string>
     <string name="app_desc">La toolchain proxy universale per Android, scritta in Kotlin.</string>
+    <string name="connection_test_testing">Test in corso…</string>
+    <string name="action_import_url">Importa da URL</string>
+    <string name="geoip_api">Indirizzo test informazioni connessione</string>
 </resources>

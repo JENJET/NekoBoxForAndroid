@@ -199,4 +199,6 @@
     <string name="header_type">Jenis Tajuk</string>
     <string name="security">Enkripsi lapisan transportasi</string>
     <string name="alter_id">Ubah ID</string>
+    <string name="action_import_url">Impor dari URL</string>
+    <string name="geoip_api">Alamat tes info koneksi</string>
 </resources>

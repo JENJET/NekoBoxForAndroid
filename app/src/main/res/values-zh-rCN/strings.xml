@@ -128,6 +128,7 @@
     <string name="action_export_file">导出到文件</string>
     <string name="action_export_clipboard">导出到剪切板</string>
     <string name="action_import">从剪切板导入</string>
+    <string name="action_import_url">从URL导入</string>
     <string name="action_import_file">从文件中导入</string>
     <string name="action_export_msg">导出成功!</string>
     <string name="action_export_err">导出失败.</string>
@@ -499,4 +500,5 @@
     <string name="minimize">最小化</string>
     <string name="app_list_permission_denied">无法读取已安装的应用。\n这通常是由于系统限制了应用的读取权限（例如某些中国厂商系统）。\n请在系统设置中授予权限。</string>
     <string name="open_app_settings">打开系统设置</string>
+    <string name="geoip_api">连接信息测试地址</string>
 </resources>

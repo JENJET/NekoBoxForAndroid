@@ -447,6 +447,8 @@
     <string name="acquire_wake_lock_summary">Mantener la CPU encendida</string> 
     <string name="action_switch">Cambiar</string> 
  
-    <string name="connection_test_delete_unavailable">Borrado no disponible</string> 
+    <string name="connection_test_delete_unavailable">Borrado no disponible</string>
+    <string name="action_import_url">Importar desde URL</string>
+    <string name="geoip_api">Dirección de prueba de información de conexión</string>
+</resources>
 
-</resources> 

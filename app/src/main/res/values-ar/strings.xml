@@ -378,4 +378,6 @@
     <string name="ssh_private_key">مفتاح خاص</string>
     <string name="ssh_public_key">المفتاح العمومي</string>
     <string name="ssh_auth_type_none">لا شيء</string>
+    <string name="action_import_url">استيراد من الرابط</string>
+    <string name="geoip_api">عنوان اختبار معلومات الاتصال</string>
 </resources>

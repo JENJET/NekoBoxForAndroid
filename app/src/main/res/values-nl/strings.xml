@@ -8,4 +8,7 @@
     <string name="github">Broncode</string>
     <string name="project">Project</string>
     <string name="app_desc">De universele proxy-toolchain voor Android, geschreven in Kotlin.</string>
+    <string name="connection_test_testing">Testen…</string>
+    <string name="action_import_url">Importeren van URL</string>
+    <string name="geoip_api">Verbindingsinformatie testadres</string>
 </resources>

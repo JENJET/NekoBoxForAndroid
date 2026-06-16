@@ -101,4 +101,6 @@
     <string name="key_opt">キー（オプション）</string>
     <string name="network">ネットワーク</string>
     <string name="speed_interval">速度通知のアップデート間隔</string>
+    <string name="action_import_url">URLからインポート</string>
+    <string name="geoip_api">接続情報テストアドレス</string>
 </resources>
