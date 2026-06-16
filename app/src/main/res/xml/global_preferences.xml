@@ -213,6 +213,13 @@
             app:key="connectionTestURL"
             app:title="@string/connection_test_url"
             app:useSimpleSummaryProvider="true" />
+        <ListPreference
+            app:defaultValue="https://api.ip.sb/geoip"
+            app:entries="@array/geoip_api_entry"
+            app:entryValues="@array/geoip_api_value"
+            app:key="geoipAPI"
+            app:title="@string/geoip_api"
+            app:useSimpleSummaryProvider="true" />
         <SwitchPreference
             app:icon="@drawable/baseline_construction_24"
             app:key="enableClashAPI"

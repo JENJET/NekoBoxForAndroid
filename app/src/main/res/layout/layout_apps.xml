@@ -68,13 +68,13 @@
                                 android:id="@+id/appProxyModeOn"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:checked="true"
                                 android:text="@string/route_proxy" />
 
                             <com.google.android.material.chip.Chip
                                 android:id="@+id/appProxyModeBypass"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:checked="true"
                                 android:text="@string/bypass_apps" />
 
                         </com.google.android.material.chip.ChipGroup>
