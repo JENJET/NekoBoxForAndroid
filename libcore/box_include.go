@@ -83,14 +83,15 @@ func nekoboxAndroidOutboundRegistry() *outbound.Registry {
 	tuic.RegisterOutbound(registry)
 	hysteria2.RegisterOutbound(registry)
 
-	wireguard.RegisterOutbound(registry)
-
 	return registry
 }
 
 func nekoboxAndroidEndpointRegistry() *endpoint.Registry {
 	registry := endpoint.NewRegistry()
 
+	// NekoBox: WireGuard is registered as an endpoint (not outbound) per
+	// sing-box v1.13+ architecture. The endpoint implements adapter.Outbound
+	// and is automatically added to the route lookup in OutboundManager.Start().
 	wireguard.RegisterEndpoint(registry)
 
 	return registry

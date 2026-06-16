@@ -40,6 +40,7 @@ func (s *interfaceMonitorStub) UnregisterCallback(element *list.Element[tun.Defa
 func (s *interfaceMonitorStub) RegisterMyInterface(interfaceName string) {
 }
 
-func (s *interfaceMonitorStub) MyInterface() string {
-	return ""
+// NekoBox: return empty slice instead of nil to avoid null in serialized output.
+func (s *interfaceMonitorStub) MyInterfaces() []string {
+	return []string{}
 }

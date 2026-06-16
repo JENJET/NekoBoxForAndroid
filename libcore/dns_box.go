@@ -54,6 +54,12 @@ func (p *platformLocalDNSTransport) Close() error {
 	return nil
 }
 
+// Reset implements adapter.DNSTransport.
+// NekoBox: Android's native DNS resolver has no connection pool to reset,
+// so this is intentionally a no-op.
+func (p *platformLocalDNSTransport) Reset() {
+}
+
 func (p *platformLocalDNSTransport) Exchange(ctx context.Context, message *mDNS.Msg) (*mDNS.Msg, error) {
 	if p.raw && rawQueryFunc != nil {
 		// Raw - Android 10 及以上才有

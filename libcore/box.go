@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"libcore/boxapi"
 	"libcore/device"
 	"log"
 	"runtime"
@@ -14,23 +15,15 @@ import (
 
 	"github.com/matsuridayo/libneko/protect_server"
 	"github.com/matsuridayo/libneko/speedtest"
-	"github.com/sagernet/sing-box/adapter"
-	"github.com/sagernet/sing-box/boxapi"
-	"github.com/sagernet/sing-box/experimental/libbox/platform"
-	"github.com/sagernet/sing-box/protocol/group"
 
 	box "github.com/sagernet/sing-box"
-	"github.com/sagernet/sing-box/common/conntrack"
-	"github.com/sagernet/sing-box/common/dialer"
+	"github.com/sagernet/sing-box/adapter"
 	"github.com/sagernet/sing-box/constant"
 	"github.com/sagernet/sing-box/option"
+	"github.com/sagernet/sing-box/protocol/group"
 	"github.com/sagernet/sing/service"
 	"github.com/sagernet/sing/service/pause"
 )
-
-func init() {
-	dialer.DoNotSelectInterface = true
-}
 
 var mainInstance *BoxInstance
 
@@ -60,7 +53,9 @@ func VersionBox() string {
 
 func ResetAllConnections(system bool) {
 	if system {
-		conntrack.Close()
+		if mainInstance != nil {
+			mainInstance.Router().ResetNetwork()
+		}
 		log.Println("Reset system connections done")
 	} else {
 		log.Println("TODO: Reset user connections")
@@ -82,6 +77,8 @@ type BoxInstance struct {
 func NewSingBoxInstance(config string, localTransport LocalDNSTransport) (b *BoxInstance, err error) {
 	defer device.DeferPanicToError("NewSingBoxInstance", func(err_ error) { err = err_ })
 
+	// config = patchBoxConfig(config) // NekoBox: temporarily disabled for testing
+
 	// create box context
 	ctx, cancel := context.WithCancel(context.Background())
 	ctx = box.Context(ctx,
@@ -89,7 +86,7 @@ func NewSingBoxInstance(config string, localTransport LocalDNSTransport) (b *Box
 		nekoboxAndroidDNSTransportRegistry(localTransport), nekoboxAndroidServiceRegistry(),
 	)
 	ctx = service.ContextWithDefaultRegistry(ctx)
-	service.MustRegister[platform.Interface](ctx, boxPlatformInterfaceInstance)
+	service.MustRegister[adapter.PlatformInterface](ctx, boxPlatformInterfaceInstance)
 
 	// parse options
 	var options option.Options
@@ -100,8 +97,10 @@ func NewSingBoxInstance(config string, localTransport LocalDNSTransport) (b *Box
 
 	// create box
 	instance, err := box.New(box.Options{
-		Options:           options,
-		Context:           ctx,
+		Options: options,
+		Context: ctx,
+		// NekoBox: always provide a PlatformLogWriter so sing-box output
+		// is captured and written to the app log file (Android has no stdout).
 		PlatformLogWriter: boxPlatformLogWriter,
 	})
 	if err != nil {
@@ -196,7 +195,9 @@ func (b *BoxInstance) SetV2rayStats(outbounds string) {
 		Enabled:   true,
 		Outbounds: strings.Split(outbounds, "\n"),
 	})
-	b.Box.Router().AppendTracker(b.v2api.StatsService())
+	if b.v2api != nil {
+		b.Box.Router().AppendTracker(b.v2api.StatsService())
+	}
 }
 
 func (b *BoxInstance) QueryStats(tag, direct string) int64 {

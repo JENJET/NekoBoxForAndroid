@@ -41,6 +41,7 @@ type HTTPClient interface {
 	KeepAlive()
 	NewRequest() HTTPRequest
 	Close()
+	SetTimeout(seconds int32)
 }
 
 type HTTPRequest interface {
@@ -159,6 +160,12 @@ func (c *httpClient) NewRequest() HTTPRequest {
 
 func (c *httpClient) Close() {
 	c.h1h2Transport.CloseIdleConnections()
+}
+
+func (c *httpClient) SetTimeout(seconds int32) {
+	if seconds > 0 {
+		c.h1h2Client.Timeout = time.Duration(seconds) * time.Second
+	}
 }
 
 type httpRequest struct {
