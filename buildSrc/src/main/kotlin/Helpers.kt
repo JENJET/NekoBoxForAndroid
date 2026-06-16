@@ -56,6 +56,7 @@ fun Project.setupCommon() {
             sourceCompatibility = JavaVersion.VERSION_1_8
             targetCompatibility = JavaVersion.VERSION_1_8
         }
+        @Suppress("DEPRECATION")
         (android as ExtensionAware).extensions.getByName<KotlinJvmOptions>("kotlinOptions").apply {
             jvmTarget = JavaVersion.VERSION_1_8.toString()
         }
