@@ -193,6 +193,7 @@ class StatsBar @JvmOverloads constructor(
         val key = profileId.toString()
 
         var hitCache: Triple<String, String, String>? = null
+        var staleDisplay: Triple<String, String, String>? = null
         var placeholderValid = false
         synchronized(geoIPCache) {
             val cached = geoIPCache[groupId]?.get(key)
@@ -201,13 +202,15 @@ class StatsBar @JvmOverloads constructor(
             } else if (cached != null && cached.ip.isEmpty() && now - cached.timestamp < 120_000L) {
                 placeholderValid = true
             } else if (onMainPage) {
-                // 写入占位符
-                geoIPCache.getOrPut(groupId) { mutableMapOf() }[key] =
-                    if (cached != null) cached.copy(timestamp = now) else GeoIPCache("", "", "", now)
+                if (cached != null && cached.ip.isNotEmpty()) {
+                    staleDisplay = Triple(cached.ip, cached.city, cached.country)
+                    geoIPCache.getOrPut(groupId) { mutableMapOf() }[key] = cached.copy(timestamp = now)
+                } else {
+                    geoIPCache.getOrPut(groupId) { mutableMapOf() }[key] = GeoIPCache("", "", "", now)
+                }
             }
         }
 
-        // 缓存命中或占位符有效，直接显示/跳过
         if (hitCache != null) {
             val (ip, city, country) = hitCache!!
             updateServerInfoUI(ip, city, country)
@@ -215,9 +218,10 @@ class StatsBar @JvmOverloads constructor(
         }
         if (placeholderValid || !onMainPage) return
 
-        // 无有效缓存，若有占位符保留的旧数据则暂不清理，异步更新
-        val placeholder = synchronized(geoIPCache) { geoIPCache[groupId]?.get(key) }
-        if (placeholder == null || placeholder.ip.isEmpty()) {
+        if (staleDisplay != null) {
+            val (ip, city, country) = staleDisplay!!
+            updateServerInfoUI(ip, city, country)
+        } else {
             updateServerInfoUI("", "", "")
         }
 
