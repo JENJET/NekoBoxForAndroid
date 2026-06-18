@@ -39,6 +39,8 @@ public class SubscriptionBean extends Serializable {
 
     public String subscriptionUserinfo;
 
+    public String rawData;
+
     public SubscriptionBean() {
     }
 
@@ -59,6 +61,7 @@ public class SubscriptionBean extends Serializable {
         output.writeInt(lastUpdated);
 
         output.writeString(subscriptionUserinfo);
+        output.writeString(rawData);
     }
 
     public void serializeForShare(ByteBufferOutput output) {
@@ -88,6 +91,11 @@ public class SubscriptionBean extends Serializable {
         autoUpdateDelay = input.readInt();
         lastUpdated = input.readInt();
         subscriptionUserinfo = input.readString();
+        try {
+            rawData = input.readString();
+        } catch (Exception e) {
+            rawData = "";
+        }
     }
 
     public void deserializeFromShare(ByteBufferInput input) {
@@ -120,6 +128,7 @@ public class SubscriptionBean extends Serializable {
         if (username == null) username = "";
         if (expiryDate == null) expiryDate = 0;
         if (protocols == null) protocols = new ArrayList<>();
+        if (rawData == null) rawData = "";
     }
 
     public static final Creator<SubscriptionBean> CREATOR = new CREATOR<SubscriptionBean>() {

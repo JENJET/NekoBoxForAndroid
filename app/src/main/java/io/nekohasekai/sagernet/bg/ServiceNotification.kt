@@ -58,36 +58,36 @@ class ServiceNotification(
     suspend fun postNotificationSpeedUpdate(stats: SpeedDisplayData) {
         useBuilder {
             if (showDirectSpeed) {
-                val speedDetail = (service as Context).getString(
-                    R.string.speed_detail, service.getString(
-                        R.string.speed, Formatter.formatFileSize(service, stats.txRateProxy)
-                    ), service.getString(
-                        R.string.speed, Formatter.formatFileSize(service, stats.rxRateProxy)
-                    ), service.getString(
+                val speedDetail = app.getString(
+                    R.string.speed_detail, app.getString(
+                        R.string.speed, Formatter.formatFileSize(app, stats.txRateProxy)
+                    ), app.getString(
+                        R.string.speed, Formatter.formatFileSize(app, stats.rxRateProxy)
+                    ), app.getString(
                         R.string.speed,
-                        Formatter.formatFileSize(service, stats.txRateDirect)
-                    ), service.getString(
+                        Formatter.formatFileSize(app, stats.txRateDirect)
+                    ), app.getString(
                         R.string.speed,
-                        Formatter.formatFileSize(service, stats.rxRateDirect)
+                        Formatter.formatFileSize(app, stats.rxRateDirect)
                     )
                 )
                 it.setStyle(NotificationCompat.BigTextStyle().bigText(speedDetail))
                 it.setContentText(speedDetail)
             } else {
-                val speedSimple = (service as Context).getString(
-                    R.string.traffic, service.getString(
-                        R.string.speed, Formatter.formatFileSize(service, stats.txRateProxy)
-                    ), service.getString(
-                        R.string.speed, Formatter.formatFileSize(service, stats.rxRateProxy)
+                val speedSimple = app.getString(
+                    R.string.traffic, app.getString(
+                        R.string.speed, Formatter.formatFileSize(app, stats.txRateProxy)
+                    ), app.getString(
+                        R.string.speed, Formatter.formatFileSize(app, stats.rxRateProxy)
                     )
                 )
                 it.setContentText(speedSimple)
             }
             it.setSubText(
-                service.getString(
+                app.getString(
                     R.string.traffic,
-                    Formatter.formatFileSize(service, stats.txTotal),
-                    Formatter.formatFileSize(service, stats.rxTotal)
+                    Formatter.formatFileSize(app, stats.txTotal),
+                    Formatter.formatFileSize(app, stats.rxTotal)
                 )
             )
         }
@@ -214,6 +214,7 @@ class ServiceNotification(
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             (service as Service).stopForeground(Service.STOP_FOREGROUND_REMOVE)
         } else {
+            @Suppress("DEPRECATION")
             (service as Service).stopForeground(true)
         }
         service.unregisterReceiver(this)

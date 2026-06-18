@@ -6,15 +6,19 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Parcelable
 import android.view.Menu
+import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.component1
 import androidx.activity.result.component2
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.LayoutRes
 import androidx.appcompat.app.AlertDialog
+import androidx.core.view.MenuProvider
 import androidx.core.view.ViewCompat
+import androidx.lifecycle.Lifecycle
 import androidx.preference.EditTextPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceDataStore
@@ -51,7 +55,7 @@ class RouteSettingsActivity(
         RuleEntity().apply {
             if (!packageName.isNullOrBlank()) {
                 packages = setOf(packageName)
-                name = app.getString(R.string.route_for, PackageCache.loadLabel(packageName))
+                name = getString(R.string.route_for, PackageCache.loadLabel(packageName))
             }
         }.init()
     }
@@ -222,6 +226,17 @@ class RouteSettingsActivity(
             setHomeAsUpIndicator(R.drawable.ic_navigation_close)
         }
 
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (needSave()) {
+                    UnsavedChangesDialogFragment().apply { key() }.show(supportFragmentManager, null)
+                } else {
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                }
+            }
+        })
+
         if (savedInstanceState == null) {
             val editingId = intent.getLongExtra(EXTRA_ROUTE_ID, 0L)
             DataStore.editingId = editingId
@@ -285,22 +300,6 @@ class RouteSettingsActivity(
 
     }
 
-    val child by lazy { supportFragmentManager.findFragmentById(R.id.settings) as MyPreferenceFragmentCompat }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.profile_config_menu, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem) = child.onOptionsItemSelected(item)
-
-    @Suppress("DEPRECATION")
-    override fun onBackPressed() {
-        if (needSave()) {
-            UnsavedChangesDialogFragment().apply { key() }.show(supportFragmentManager, null)
-        } else super.onBackPressed()
-    }
-
     override fun onSupportNavigateUp(): Boolean {
         if (!super.onSupportNavigateUp()) finish()
         return true
@@ -345,29 +344,34 @@ class RouteSettingsActivity(
             activity?.apply {
                 viewCreated(view, savedInstanceState)
             }
-        }
 
-        override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
-            R.id.action_delete -> {
-                if (DataStore.editingId == 0L) {
-                    requireActivity().finish()
-                } else {
-                    DeleteConfirmationDialogFragment().apply {
-                        arg(ProfileIdArg(DataStore.editingId))
-                        key()
-                    }.show(parentFragmentManager, null)
+            requireActivity().addMenuProvider(object : MenuProvider {
+                override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                    menuInflater.inflate(R.menu.profile_config_menu, menu)
                 }
-                true
-            }
-
-            R.id.action_apply -> {
-                runOnDefaultDispatcher {
-                    activity?.saveAndExit()
+                override fun onMenuItemSelected(item: MenuItem): Boolean {
+                    return when (item.itemId) {
+                        R.id.action_delete -> {
+                            if (DataStore.editingId == 0L) {
+                                requireActivity().finish()
+                            } else {
+                                DeleteConfirmationDialogFragment().apply {
+                                    arg(ProfileIdArg(DataStore.editingId))
+                                    key()
+                                }.show(parentFragmentManager, null)
+                            }
+                            true
+                        }
+                        R.id.action_apply -> {
+                            runOnDefaultDispatcher {
+                                activity?.saveAndExit()
+                            }
+                            true
+                        }
+                        else -> false
+                    }
                 }
-                true
-            }
-
-            else -> false
+            }, viewLifecycleOwner, Lifecycle.State.RESUMED)
         }
 
         override fun onDisplayPreferenceDialog(preference: Preference) {

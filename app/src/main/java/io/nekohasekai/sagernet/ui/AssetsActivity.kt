@@ -7,6 +7,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.OnBackPressedCallback
 import androidx.core.view.isInvisible
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
@@ -82,6 +83,12 @@ class AssetsActivity : ThemedActivity() {
             ) = false
 
         }).attachToRecyclerView(binding.recyclerView)
+
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                finish()
+            }
+        })
     }
 
     override fun snackbarInternal(text: CharSequence): Snackbar {
@@ -337,9 +344,7 @@ class AssetsActivity : ThemedActivity() {
         return true
     }
 
-    override fun onBackPressed() {
-        finish()
-    }
+
 
     override fun onResume() {
         super.onResume()

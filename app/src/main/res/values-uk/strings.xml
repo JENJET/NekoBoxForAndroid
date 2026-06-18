@@ -38,9 +38,9 @@
     <string name="group_status_empty">Порожня група</string>
     <string name="group_status_empty_subscription">Ще не оновлено</string>
     <string name="group_status_proxies">%d проксі</string>
-    <string name="group_status_proxies_subscription">%d проксі | Оновлено %s</string>
+    <string name="group_status_proxies_subscription">%1$d проксі | Оновлено %2$s</string>
     <string name="group_no_difference">%s: Немає різниці</string>
-    <string name="group_updated">%s: Оновлено %d проксі</string>
+    <string name="group_updated">%1$s: Оновлено %2$d проксі</string>
     <string name="group_show_diff">Різниця</string>
     <string name="group_diff">Різниця (%s)</string>
     <string name="group_delete_confirm_prompt">Ви впевнені, що хочете видалити цю групу?</string>
@@ -248,15 +248,11 @@
     <string name="add_profile_methods_scan_qr_code">Сканувати QR-код</string>
     <string name="add_profile_methods_manual_settings">Ручні налаштування</string>
     <plurals name="removed">
-        <item quantity="one">Видалено</item>
-        <item quantity="few">Видалено %d елементи</item>
-        <item quantity="many">Видалено %d елементів</item>
-        <item quantity="other">Видалено %d елемента</item>
+        <item quantity="one">Видалено %d елемент</item>
+        <item quantity="other">Видалено %d елементи</item>
     </plurals>
     <plurals name="added">
-        <item quantity="one">Додано</item>
-        <item quantity="few">Додано %d проксі</item>
-        <item quantity="many">Додано %d проксі</item>
+        <item quantity="one">Додано %d проксі</item>
         <item quantity="other">Додано %d проксі</item>
     </plurals>
     <string name="undo">Скасувати</string>
@@ -350,7 +346,7 @@
     <string name="subscription_user_agent">UserAgent</string>
     <string name="confirm">Підтвердити</string>
     <string name="missing_plugin">Відсутній плагін</string>
-    <string name="profile_requiring_plugin">Профіль %s вимагає встановлення плагіна %s, але його не знайдено.</string>
+    <string name="profile_requiring_plugin">Профіль %1$s вимагає встановлення плагіна %2$s, але його не знайдено.</string>
     <string name="action_learn_more">ДІЗНАТИСЯ БІЛЬШЕ</string>
     <string name="action_download">ЗАВАНТАЖИТИ</string>
     <string name="install_from_play_store">Встановити з Play Store</string>
@@ -366,7 +362,7 @@
     <string name="subscription_update_message">Оновлення %s …</string>
     <string name="group_filter">Фільтр</string>
     <string name="subscription_used">Використано %s</string>
-    <string name="subscription_traffic">Використано %s / Залишилося %s</string>
+    <string name="subscription_traffic">Використано %1$s / Залишилося %2$s</string>
     <string name="subscription_expire">Закінчується: %s</string>
     <string name="subscription_import">Імпортувати підписку</string>
     <string name="subscription_import_message">Підтвердьте, що ви хочете імпортувати підписку %s? Якщо ви робите це з ненадійного джерела, це може призвести до витоку вашої IP-адреси та даних про цю дію.</string>
@@ -389,7 +385,7 @@
     <string name="group_order_origin">За замовчуванням</string>
     <string name="group_order_by_name">За назвою</string>
     <string name="group_order_by_delay">За затримкою</string>
-    <string name="plugin_exists_but_on_shit_system">Профіль %s вимагає плагін %s, але ваш виробник обладнання (зазвичай гіганти-капіталісти зі спостереження та виробники шкідливого ПЗ) змінив вашу систему Android, зробивши плагін непридатним для використання.</string>
+    <string name="plugin_exists_but_on_shit_system">Профіль %1$s вимагає плагін %2$s, але ваш виробник обладнання (зазвичай гіганти-капіталісти зі спостереження та виробники шкідливого ПЗ) змінив вашу систему Android, зробивши плагін непридатним для використання.</string>
     <string name="shadowsocks_plugin_simple_obfs">Simple Obfs (плагін для Shadowsocks)</string>
     <string name="shadowsocks_plugin_v2ray">V2Ray (плагін для Shadowsocks)</string>
     <string name="traffic_uplink" translatable="false">%s | %s/с ↑</string>
@@ -464,8 +460,8 @@
     <string name="tuic_congestion_controller">Контролер перевантаження</string>
     <string name="tuic_disable_sni">Вимкнути SNI</string>
     <string name="tuic_reduce_rtt">Увімкнути 0-RTT QUIC рукостискання</string>
-    <string name="please_update">Ваша програма занадто стара (%s) і перестане працювати %s. Будь ласка, оновіть її!</string>
-    <string name="please_update_force">Ваша програма занадто стара (%s) і перестала працювати %s. Будь ласка, оновіть її!</string>
+    <string name="please_update">Ваша програма занадто стара (%1$s) і перестане працювати %2$s. Будь ласка, оновіть її!</string>
+    <string name="please_update_force">Ваша програма занадто стара (%1$s) і перестала працювати %2$s. Будь ласка, оновіть її!</string>
     <string name="connection_test_delete_unavailable">Очистити недоступні</string>
     <string name="move">Перемістити</string>
     <string name="exe_prefer_provider">Пріоритетний постачальник плагіна</string>
@@ -484,7 +480,7 @@
     <string name="set_panel_url">Встановити URL панелі</string>
     <string name="enable_clash_api">Увімкнути Clash API</string>
     <string name="log_level">Рівень журналу</string>
-    <string name="enable_clash_api_summary">Надати Clash API та панель yacd за адресою 127.0.0.1:9090</string>
+    <string name="enable_clash_api_summary">Надати Clash API та панель yacd на локальному порту 9090</string>
     <string name="xtls_flow">Flow (підпротокол VLESS)</string>
     <string name="ads">Реклама</string>
     <string name="bypass_lan_in_core">Обходити ЛВС в ядрі</string>
@@ -523,5 +519,19 @@
     <string name="network_change_reset_connections">Скидати вихідні з\'єднання при зміні мережі</string>
     <string name="wake_reset_connections">Скидати вихідні з\'єднання при виході пристрою зі сну</string>
     <string name="action_import_url">Імпортувати з URL</string>
+    <string name="app_list_permission_denied">Не вдалося прочитати список встановлених додатків. Зазвичай це пов\'язано з обмеженнями системи (наприклад, у деяких китайських виробників). Будь ласка, надайте дозвіл у налаштуваннях системи.</string>
+    <string name="check_update_no">Перевірка виконана, оновлень не знайдено.</string>
+    <string name="check_update_preview">Перевірити оновлення попередньої версії</string>
+    <string name="check_update_release">Перевірити оновлення стабільної версії</string>
+    <string name="minimize">Згорнути</string>
+    <string name="open_app_settings">Відкрити налаштування системи</string>
+    <string name="preview_subscription">Попередній перегляд</string>
+    <string name="preview_version_hint">Ця програма є попередньою версією і може мати багато проблем. Якщо ви не хочете брати участь у тестуванні, завантажте стабільну версію з GitHub!</string>
+    <string name="reset_settings">Відновити налаштування за замовчуванням</string>
+    <string name="reset_settings_message">Відновити налаштування за замовчуванням, але дані вузлів, груп тощо будуть збережені. Для повного очищення даних, очистіть дані програми в налаштуваннях системи.</string>
+    <string name="update_dialog_message">Поточна версія: %1$s\nДоступна версія: %2$s\nБажаєте завантажити?</string>
+    <string name="update_dialog_title">Доступна нова версія</string>
     <string name="geoip_api">Адреса тестування інформації про з\'єднання</string>
+    <string name="app_language">Мова</string>
 </resources>
+

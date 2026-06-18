@@ -7,6 +7,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
+import android.content.res.Resources
 import android.net.ConnectivityManager
 import android.net.Network
 import android.os.Build
@@ -17,9 +18,11 @@ import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import go.Seq
+import io.nekohasekai.sagernet.Key
 import io.nekohasekai.sagernet.bg.SagerConnection
 import io.nekohasekai.sagernet.database.DataStore
 import io.nekohasekai.sagernet.ktx.Logs
+import java.util.Locale
 import io.nekohasekai.sagernet.ktx.isOss
 import io.nekohasekai.sagernet.ktx.isPreview
 import io.nekohasekai.sagernet.ktx.runOnDefaultDispatcher
@@ -42,6 +45,25 @@ class SagerNet : Application(),
         super.attachBaseContext(base)
 
         application = this
+    }
+
+    private var localeResources: Resources? = null
+
+    override fun getResources(): Resources {
+        return localeResources ?: super.getResources()
+    }
+
+    fun updateLocale() {
+        localeResources = try {
+            val locale = resolveSystemLocale(this)
+            if (locale == null) null else {
+                val config = Configuration(super.getResources().configuration)
+                config.setLocales(android.os.LocaleList(locale))
+                createConfigurationContext(config).resources
+            }
+        } catch (_: Exception) {
+            null
+        }
     }
 
     private val nativeInterface = NativeInterface()
@@ -78,6 +100,7 @@ class SagerNet : Application(),
             }
         }
 
+        updateLocale()
         if (isMainProcess) {
             Theme.apply(this)
             Theme.applyNightTheme()
@@ -105,6 +128,7 @@ class SagerNet : Application(),
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
+        updateLocale()
         updateNotificationChannels()
     }
 
@@ -197,10 +221,27 @@ class SagerNet : Application(),
         fun reloadService() =
             application.sendBroadcast(Intent(Action.RELOAD).setPackage(application.packageName))
 
+        fun notifyLocaleChanged() =
+            application.sendBroadcast(Intent(Action.LOCALE_CHANGED).setPackage(application.packageName))
+
         fun stopService() =
             application.sendBroadcast(Intent(Action.CLOSE).setPackage(application.packageName))
 
         var underlyingNetwork: Network? = null
+
+        @Volatile
+        var activeTestNotification: moe.matsuri.nb4a.ui.ConnectionTestNotification? = null
+
+        fun resolveSystemLocale(context: Context): Locale? {
+            val lang = DataStore.configurationStore.getString(Key.APP_LANGUAGE)
+            if (lang.isNullOrEmpty() || lang == "system") {
+                val sysLocale = Locale.getDefault()
+                val supported = context.resources.getStringArray(R.array.language_values)
+                return if (supported.any { sysLocale.language == Locale.forLanguageTag(it).language }) null
+                else Locale.ENGLISH
+            }
+            return Locale.forLanguageTag(lang).takeIf { it.language.isNotEmpty() }
+        }
 
         var appVersionNameForDisplay = {
             var n = BuildConfig.VERSION_NAME

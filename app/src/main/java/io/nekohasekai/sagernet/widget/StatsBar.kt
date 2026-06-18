@@ -15,11 +15,14 @@ import com.google.android.material.bottomappbar.BottomAppBar
 import io.nekohasekai.sagernet.R
 import io.nekohasekai.sagernet.bg.BaseService
 import io.nekohasekai.sagernet.database.DataStore
+import io.nekohasekai.sagernet.database.ProfileManager
 import io.nekohasekai.sagernet.ktx.*
 import io.nekohasekai.sagernet.ui.MainActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import libcore.Libcore
 import moe.matsuri.nb4a.utils.Util
 import org.json.JSONObject
@@ -37,6 +40,8 @@ class StatsBar @JvmOverloads constructor(
     private lateinit var behavior: StatsBarBehavior
 
     var allowShow = true
+    private var refreshJob: kotlinx.coroutines.Job? = null
+    private var refreshKey: String = ""
 
     companion object {
         private val geoIPCache = java.util.Collections.synchronizedMap(mutableMapOf<Long, MutableMap<String, GeoIPCache>>())
@@ -116,7 +121,7 @@ class StatsBar @JvmOverloads constructor(
         if ((state == BaseService.State.Connected).also { hideOnScroll = it }) {
             postWhenStarted {
                 if (allowShow) performShow()
-                setStatus(app.getText(R.string.vpn_connected))
+                setStatus(context.getText(R.string.vpn_connected))
                 refreshServerInfo()
             }
         } else {
@@ -153,40 +158,74 @@ class StatsBar @JvmOverloads constructor(
         }"
     }
 
-    fun refreshServerInfo() {
+    fun refreshServerInfo(testProxyId: Long = -1L) {
+        if (!DataStore.serviceState.connected) return
         val activity = context as MainActivity
         val currentFragment = activity.supportFragmentManager
             .findFragmentById(R.id.fragment_holder)
         val onMainPage = currentFragment is io.nekohasekai.sagernet.ui.ConfigurationFragment
 
         val now = System.currentTimeMillis()
-        val groupId = DataStore.selectedGroup
-        val profileId = DataStore.currentProfile
-
-        val proxy = io.nekohasekai.sagernet.database.ProfileManager.getProfile(profileId)
-        val bean = proxy?.requireBean()
-        val cacheKey = "${bean?.serverAddress}:${bean?.serverPort}"
-
-        val cached = synchronized(geoIPCache) { geoIPCache[groupId]?.get(cacheKey) }
-        if (cached != null && cached.ip.isNotEmpty()) {
-            updateServerInfoUI(cached.ip, cached.city, cached.country)
-            if (now - cached.timestamp < 120_000L) return
+        val profileId = if (testProxyId > 0) testProxyId else DataStore.selectedProxy
+        val groupId = if (testProxyId > 0) {
+            ProfileManager.getProfile(profileId)?.groupId ?: DataStore.selectedGroup
+        } else {
+            DataStore.selectedGroup
         }
 
-        if (!onMainPage) return
+        // 取消上一次未完成的请求，并清理其残留占位符
+        refreshJob?.cancel()
+        if (refreshKey.isNotEmpty()) {
+            synchronized(geoIPCache) {
+                val stale = geoIPCache[groupId]?.get(refreshKey)
+                if (stale != null && stale.ip.isEmpty()) {
+                    geoIPCache[groupId]?.remove(refreshKey)
+                }
+            }
+            refreshKey = ""
+        }
 
+        if (profileId <= 0) {
+            updateServerInfoUI("", "", "")
+            return
+        }
+
+        val key = profileId.toString()
+
+        var hitCache: Triple<String, String, String>? = null
+        var placeholderValid = false
         synchronized(geoIPCache) {
-            val existing = geoIPCache[groupId]?.get(cacheKey)
-            if (existing != null) {
-                if (existing.ip.isEmpty() && now - existing.timestamp < 120_000L) return
-                geoIPCache.getOrPut(groupId) { mutableMapOf() }[cacheKey] = existing.copy(timestamp = now)
-            } else {
-                geoIPCache.getOrPut(groupId) { mutableMapOf() }[cacheKey] = GeoIPCache("", "", "", now)
+            val cached = geoIPCache[groupId]?.get(key)
+            if (cached != null && cached.ip.isNotEmpty() && now - cached.timestamp < 120_000L) {
+                hitCache = Triple(cached.ip, cached.city, cached.country)
+            } else if (cached != null && cached.ip.isEmpty() && now - cached.timestamp < 120_000L) {
+                placeholderValid = true
+            } else if (onMainPage) {
+                // 写入占位符
+                geoIPCache.getOrPut(groupId) { mutableMapOf() }[key] =
+                    if (cached != null) cached.copy(timestamp = now) else GeoIPCache("", "", "", now)
             }
         }
 
-        activity.lifecycleScope.launch(Dispatchers.Main) {
-            val info = kotlinx.coroutines.withContext(Dispatchers.IO) {
+        // 缓存命中或占位符有效，直接显示/跳过
+        if (hitCache != null) {
+            val (ip, city, country) = hitCache!!
+            updateServerInfoUI(ip, city, country)
+            return
+        }
+        if (placeholderValid || !onMainPage) return
+
+        // 无有效缓存，若有占位符保留的旧数据则暂不清理，异步更新
+        val placeholder = synchronized(geoIPCache) { geoIPCache[groupId]?.get(key) }
+        if (placeholder == null || placeholder.ip.isEmpty()) {
+            updateServerInfoUI("", "", "")
+        }
+
+        val requestId = profileId
+        refreshKey = key
+
+        refreshJob = activity.lifecycleScope.launch(Dispatchers.Main) {
+            val info = withContext(Dispatchers.IO) {
                 try {
                     val apiUrl = DataStore.geoipAPI
                     val json = queryGeoIp(apiUrl) ?: return@withContext null
@@ -207,34 +246,49 @@ class StatsBar @JvmOverloads constructor(
                         city = json.optString("city", "")
                     }
 
-                    mapOf(
-                        "ip" to ip,
-                        "city" to city,
-                        "country" to country
-                    )
+                    mapOf("ip" to ip, "city" to city, "country" to country)
                 } catch (e: Exception) {
                     null
                 }
             }
 
-            if (info != null) {
-                synchronized(geoIPCache) {
-                    geoIPCache.getOrPut(groupId) { mutableMapOf() }[cacheKey] = GeoIPCache(
+            ensureActive()
+
+            var displayIp = ""
+            var displayCity = ""
+            var displayCountry = ""
+
+            synchronized(geoIPCache) {
+                if (info != null) {
+                    geoIPCache.getOrPut(groupId) { mutableMapOf() }[key] = GeoIPCache(
                         ip = info["ip"] ?: "",
                         city = info["city"] ?: "",
                         country = info["country"] ?: "",
                         timestamp = System.currentTimeMillis()
                     )
-                }
-                updateServerInfoUI(info["ip"], info["city"], info["country"])
-            } else {
-                synchronized(geoIPCache) {
-                    val entry = geoIPCache[groupId]?.get(cacheKey)
+                } else {
+                    val entry = geoIPCache[groupId]?.get(key)
                     if (entry != null && entry.ip.isEmpty()) {
-                        geoIPCache[groupId]?.remove(cacheKey)
+                        geoIPCache[groupId]?.remove(key)
+                    }
+                }
+
+                val displayKey = DataStore.selectedProxy.toString()
+                val displayCache = geoIPCache[groupId]?.get(displayKey)
+
+                if (displayCache != null && displayCache.ip.isNotEmpty()) {
+                    displayIp = displayCache.ip
+                    displayCity = displayCache.city
+                    displayCountry = displayCache.country
+                } else {
+                    if (displayCache != null && displayCache.ip.isEmpty()) {
+                        geoIPCache[groupId]?.remove(displayKey)
                     }
                 }
             }
+
+            updateServerInfoUI(displayIp, displayCity, displayCountry)
+            refreshKey = ""
         }
     }
 
@@ -284,14 +338,15 @@ class StatsBar @JvmOverloads constructor(
     fun testConnection() {
         val activity = context as MainActivity
         isEnabled = false
-        setStatus(app.getText(R.string.connection_test_testing))
+        setStatus(context.getText(R.string.connection_test_testing))
+        val testProxyId = DataStore.selectedProxy
         runOnDefaultDispatcher {
             try {
                 val elapsed = activity.urlTest()
                 onMainDispatcher {
                     isEnabled = true
                     setStatus(
-                        app.getString(
+                        context.getString(
                             if (DataStore.connectionTestURL.startsWith("https://")) {
                                 R.string.connection_test_available
                             } else {
@@ -299,17 +354,17 @@ class StatsBar @JvmOverloads constructor(
                             }, elapsed
                         )
                     )
-                    refreshServerInfo()
+                    refreshServerInfo(testProxyId)
                 }
 
             } catch (e: Exception) {
                 Logs.w(e.toString())
                 onMainDispatcher {
                     isEnabled = true
-                    setStatus(app.getText(R.string.connection_test_testing))
+        setStatus(context.getText(R.string.connection_test_testing))
 
                     activity.snackbar(
-                        app.getString(
+                        context.getString(
                             R.string.connection_test_error, e.readableMessage
                         )
                     ).show()

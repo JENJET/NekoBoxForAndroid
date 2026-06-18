@@ -324,6 +324,7 @@ class GroupFragment : ToolbarFragment(R.layout.layout_group),
         val groupUser = binding.groupUser
         val editButton = binding.edit
         val optionsButton = binding.options
+        val previewButton = binding.groupPreview
         val updateButton = binding.groupUpdate
         val subscriptionUpdateProgress = binding.subscriptionUpdateProgress
 
@@ -384,6 +385,7 @@ class GroupFragment : ToolbarFragment(R.layout.layout_group),
             itemView.setOnClickListener { }
 
             editButton.isGone = proxyGroup.ungrouped
+            previewButton.isInvisible = proxyGroup.type != GroupType.SUBSCRIPTION
             updateButton.isInvisible = proxyGroup.type != GroupType.SUBSCRIPTION
             groupName.text = proxyGroup.displayName()
 
@@ -391,6 +393,34 @@ class GroupFragment : ToolbarFragment(R.layout.layout_group),
                 startActivity(Intent(it.context, GroupSettingsActivity::class.java).apply {
                     putExtra(GroupSettingsActivity.EXTRA_GROUP_ID, group.id)
                 })
+            }
+
+            previewButton.setOnClickListener {
+                val sub = proxyGroup.subscription
+                val sb = StringBuilder()
+                if (sub != null && !sub.subscriptionUserinfo.isNullOrBlank()) {
+                    sb.appendLine(getString(R.string.preview_subscription_info))
+                    sb.appendLine(sub.subscriptionUserinfo)
+                    sb.appendLine()
+                }
+                if (sub != null && !sub.rawData.isNullOrBlank()) {
+                    sb.appendLine(getString(R.string.preview_body))
+                    sb.append(sub.rawData)
+                } else {
+                    sb.append(getString(R.string.group_status_empty))
+                }
+                val text = sb.toString()
+                MaterialAlertDialogBuilder(requireContext())
+                    .setTitle(proxyGroup.displayName())
+                    .setMessage(text)
+                    .setPositiveButton(android.R.string.ok, null)
+                    .setNeutralButton(R.string.action_copy) { _, _ ->
+                        val clipboard = requireContext().getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                        val clip = android.content.ClipData.newPlainText(proxyGroup.displayName(), text)
+                        clipboard.setPrimaryClip(clip)
+                        snackbar(R.string.action_copy).show()
+                    }
+                    .show()
             }
 
             updateButton.setOnClickListener {
@@ -427,6 +457,7 @@ class GroupFragment : ToolbarFragment(R.layout.layout_group),
                     }
                 }
 
+                previewButton.isInvisible = true
                 updateButton.isInvisible = true
                 editButton.isGone = true
             } else {
@@ -435,6 +466,7 @@ class GroupFragment : ToolbarFragment(R.layout.layout_group),
                 }
 
                 subscriptionUpdateProgress.isVisible = false
+                previewButton.isInvisible = proxyGroup.type != GroupType.SUBSCRIPTION
                 updateButton.isInvisible = proxyGroup.type != GroupType.SUBSCRIPTION
                 editButton.isGone = proxyGroup.ungrouped
             }
@@ -443,17 +475,17 @@ class GroupFragment : ToolbarFragment(R.layout.layout_group),
             if (subscription != null && subscription.bytesUsed > 0L) { // SIP008 & Open Online Config
                 groupTraffic.isVisible = true
                 groupTraffic.text = if (subscription.bytesRemaining > 0L) {
-                    app.getString(
+                    requireContext().getString(
                         R.string.subscription_traffic, Formatter.formatFileSize(
-                            app, subscription.bytesUsed
+                            requireContext(), subscription.bytesUsed
                         ), Formatter.formatFileSize(
-                            app, subscription.bytesRemaining
+                            requireContext(), subscription.bytesRemaining
                         )
                     )
                 } else {
-                    app.getString(
+                    requireContext().getString(
                         R.string.subscription_used, Formatter.formatFileSize(
-                            app, subscription.bytesUsed
+                            requireContext(), subscription.bytesUsed
                         )
                     )
                 }

@@ -1,5 +1,6 @@
 package io.nekohasekai.sagernet.ui
 
+import android.content.Context
 import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
@@ -13,7 +14,12 @@ import androidx.core.view.updatePadding
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.snackbar.Snackbar
 import io.nekohasekai.sagernet.R
+import io.nekohasekai.sagernet.SagerNet
+import androidx.core.os.LocaleListCompat
+import io.nekohasekai.sagernet.Key
+import io.nekohasekai.sagernet.database.DataStore
 import io.nekohasekai.sagernet.utils.Theme
+import java.util.Locale
 
 abstract class ThemedActivity : AppCompatActivity {
     constructor() : super()
@@ -22,6 +28,17 @@ abstract class ThemedActivity : AppCompatActivity {
     var themeResId = 0
     var uiMode = 0
     open val isDialog = false
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(applyLocale(newBase))
+    }
+
+    private fun applyLocale(context: Context): Context {
+        val locale = SagerNet.resolveSystemLocale(context) ?: return context
+        val config = Configuration(context.resources.configuration)
+        config.setLocales(android.os.LocaleList(locale))
+        return context.createConfigurationContext(config)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         if (!isDialog) {

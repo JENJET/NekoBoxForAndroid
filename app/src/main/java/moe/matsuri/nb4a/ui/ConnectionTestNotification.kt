@@ -6,9 +6,16 @@ import io.nekohasekai.sagernet.R
 import io.nekohasekai.sagernet.SagerNet
 import io.nekohasekai.sagernet.ktx.Logs
 
-class ConnectionTestNotification(val context: Context, val title: String) {
+class ConnectionTestNotification(val context: Context, title: String) {
     private val channelId = "connection-test"
     private val notificationId = 1001
+    @Volatile
+    var title: String = title
+        private set
+
+    fun updateTitle(newTitle: String) {
+        title = newTitle
+    }
 
     fun updateNotification(progress: Int, max: Int, finished: Boolean) {
         try {

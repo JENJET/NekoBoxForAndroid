@@ -3,6 +3,7 @@ package io.nekohasekai.sagernet.ui
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatDelegate
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
@@ -17,6 +18,7 @@ import io.nekohasekai.sagernet.database.preference.EditTextPreferenceModifiers
 import io.nekohasekai.sagernet.ktx.*
 import io.nekohasekai.sagernet.utils.Theme
 import moe.matsuri.nb4a.ui.*
+import java.util.Locale
 
 class SettingsPreferenceFragment : PreferenceFragmentCompat() {
 
@@ -148,6 +150,44 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
             true
         }
 
+        findPreference<ListPreference>(Key.APP_LANGUAGE)?.let { languagePref ->
+            val systemLocale = Locale.getDefault()
+            val langValues = resources.getStringArray(R.array.language_values)
+            val langEntries = resources.getStringArray(R.array.language_entries)
+            val idx = langValues.indexOfFirst { systemLocale.language == Locale.forLanguageTag(it).language }
+            val systemLangName = if (idx >= 0) {
+                langEntries[idx].substringBefore(" (")
+            } else {
+                systemLocale.getDisplayLanguage(Locale.ENGLISH)
+            }
+            val dynamicFirstEntry = "${getString(R.string.follow_system)} ($systemLangName)"
+            val entryList = mutableListOf<CharSequence>(dynamicFirstEntry)
+            languagePref.entries?.let { entryList.addAll(it) }
+            languagePref.entries = entryList.toTypedArray()
+            val valueList = mutableListOf("system")
+            languagePref.entryValues?.forEach { valueList.add(it.toString()) }
+            languagePref.entryValues = valueList.toTypedArray()
+
+            languagePref.setOnPreferenceChangeListener { _, newValue ->
+                val lang = newValue as String
+                val currentLang = DataStore.configurationStore.getString(Key.APP_LANGUAGE) ?: "system"
+                if (lang == currentLang) return@setOnPreferenceChangeListener true
+                if (lang == "system") {
+                    DataStore.configurationStore.remove(Key.APP_LANGUAGE)
+                } else {
+                    DataStore.configurationStore.putString(Key.APP_LANGUAGE, lang)
+                }
+                SagerNet.application.updateLocale()
+                SagerNet.activeTestNotification?.updateTitle(
+                    "[${io.nekohasekai.sagernet.database.DataStore.currentGroup().displayName()}] ${SagerNet.application.getString(R.string.connection_test)}"
+                )
+                SagerNet.notifyLocaleChanged()
+                SagerNet.updateNotificationChannels()
+                activity?.recreate()
+                true
+            }
+        }
+
         mixedPort.onPreferenceChangeListener = reloadListener
         appendHttpProxy.onPreferenceChangeListener = reloadListener
         showDirectSpeed.onPreferenceChangeListener = reloadListener
@@ -168,6 +208,11 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
         tunImplementation.onPreferenceChangeListener = reloadListener
         acquireWakeLock.onPreferenceChangeListener = reloadListener
         globalCustomConfig.onPreferenceChangeListener = reloadListener
+
+        findPreference<EditTextPreference>("connectionTestConcurrent")?.setOnPreferenceChangeListener { _, newValue ->
+            val n = (newValue as? String)?.toIntOrNull()
+            n != null && n in 1..10
+        }
     }
 
     override fun onResume() {

@@ -38,9 +38,9 @@
     <string name="group_status_empty">Empty group</string>
     <string name="group_status_empty_subscription">Not updated yet</string>
     <string name="group_status_proxies">%d Proxies</string>
-    <string name="group_status_proxies_subscription">%d Proxies | Updated on %s</string>
+    <string name="group_status_proxies_subscription">%1$d Proxies | Updated on %2$s</string>
     <string name="group_no_difference">%s: No difference</string>
-    <string name="group_updated">%s: Updated %d proxies</string>
+    <string name="group_updated">%1$s: Updated %2$d proxies</string>
     <string name="group_show_diff">Diff</string>
     <string name="group_diff">Diff (%s)</string>
     <string name="group_delete_confirm_prompt">Are you sure you want to remove this group?</string>
@@ -99,6 +99,24 @@
     <string name="require_transproxy">Enable Transproxy Inbound</string>
     <string name="transproxy_mode">Transproxy Mode</string>
     <string name="connection_test_url">Connection Test URL</string>
+    <string-array name="connection_test_url_entry">
+        <item>Cloudflare</item>
+        <item>Google</item>
+        <item>YouTube</item>
+        <item>Google Video</item>
+        <item>Gstatic</item>
+        <item>Apple</item>
+        <item>Microsoft Connect Test</item>
+    </string-array>
+    <string-array name="connection_test_url_value">
+        <item>http://cp.cloudflare.com/</item>
+        <item>https://www.google.com/generate_204</item>
+        <item>https://www.youtube.com/generate_204</item>
+        <item>https://www.googlevideo.com/generate_204</item>
+        <item>https://www.gstatic.com/generate_204</item>
+        <item>https://www.apple.com/library/test/success.html</item>
+        <item>http://www.msftconnecttest.com/connecttest.txt</item>
+    </string-array>
     <!-- proxy category -->
     <string name="profile_name">Profile Name</string>
     <string name="server_address">Server</string>
@@ -361,7 +379,7 @@
     <string name="subscription_user_agent">UserAgent</string>
     <string name="confirm">Confirm</string>
     <string name="missing_plugin">Missing Plugin</string>
-    <string name="profile_requiring_plugin">Profile %s requires the %s plugin to be installed, but
+    <string name="profile_requiring_plugin">Profile %1$s requires the %2$s plugin to be installed, but
         it was not found.</string>
     <string name="action_learn_more">LEARN MORE</string>
     <string name="action_download">DOWNLOAD</string>
@@ -380,7 +398,7 @@
     <string name="subscription_update_message">Updating %s …</string>
     <string name="group_filter">Filter</string>
     <string name="subscription_used">%s Used</string>
-    <string name="subscription_traffic">%s Used / %s Remaining</string>
+    <string name="subscription_traffic">%1$s Used / %2$s Remaining</string>
     <string name="subscription_expire">Expire: %s</string>
     <string name="subscription_import">Import subscription</string>
     <string name="subscription_import_message">Confirm you want to import subscription %s? If you
@@ -405,7 +423,7 @@
     <string name="group_order_origin">Origin</string>
     <string name="group_order_by_name">By Name</string>
     <string name="group_order_by_delay">By Delay</string>
-    <string name="plugin_exists_but_on_shit_system">Profile %s requires the %s plugin, but your
+    <string name="plugin_exists_but_on_shit_system">Profile %1$s requires the %2$s plugin, but your
         proprietary equipment vendor (usually surveillance capital giants and malware maker)
         tampered with your Android, making the plugin unusable.</string>
 
@@ -507,9 +525,9 @@
     <string name="tuic_disable_sni">Disable SNI</string>
     <string name="tuic_reduce_rtt">Enable 0-RTT QUIC handshake</string>
 
-    <string name="please_update">Your APP is too old (%s). And will stop working at %s. Please
+    <string name="please_update">Your APP is too old (%1$s). And will stop working at %2$s. Please
         update!</string>
-    <string name="please_update_force">Your APP is too old (%s). And has been stopped working at %s.
+    <string name="please_update_force">Your APP is too old (%1$s). And has been stopped working at %2$s.
         Please update!</string>
     <string name="connection_test_delete_unavailable">Clear unavailable</string>
     <string name="move">Move</string>
@@ -529,7 +547,7 @@
     <string name="set_panel_url">Set panel URL</string>
     <string name="enable_clash_api">Enable Clash API</string>
     <string name="log_level">Log Level</string>
-    <string name="enable_clash_api_summary">Provide clash api and yacd dashboard at 127.0.0.1:9090</string>
+    <string name="enable_clash_api_summary">Provide clash api and yacd dashboard at local port 9090</string>
     <string name="xtls_flow">Flow (VLESS Sub-protocol)</string>
     <string name="ads">Ads</string>
     <string name="bypass_lan_in_core">Bypass LAN in Core</string>
@@ -569,12 +587,16 @@
     <string name="padding">Padding</string>
     <string name="network_change_reset_connections">Reset outbound connections when network changes</string>
     <string name="wake_reset_connections">Reset outbound connections when device wake from sleep</string>
+    <string name="preview_subscription">Preview</string>
+    <string name="preview_subscription_info">subscription-userinfo:</string>
+    <string name="preview_body">--- body ---</string>
     <string name="preview_version_hint">This application is a preview version and may contain many problems. If you do not want to test it, please go to GitHub to download the Release version!</string>
     <string name="check_update_preview">Check for preview version updates</string>
     <string name="check_update_release">Check for release version updates</string>
     <string name="update_dialog_title">New version available</string>
     <string name="update_dialog_message">Current version: %1$s\nAvailable version: %2$s\nDo you want to download it?</string>
     <string name="check_update_no">Check successful, but no updates.</string>
+    <string name="app_language">Language</string>
     <string name="reset_settings">Restore default settings</string>
     <string name="reset_settings_message">Restore default settings, but data such as nodes and groups will be retained. To completely clear data, clear application data directly in the system settings.</string>
     <string name="minimize">Minimize</string>
@@ -597,4 +619,51 @@
         <item>https://ipapi.co/json/</item>
         <item>https://api.country.is/</item>
     </string-array>
+
+    <string-array name="language_entries">
+        <item>English (en)</item>
+        <item>简体中文 (zh-CN)</item>
+        <item>繁體中文 香港 (zh-HK)</item>
+        <item>繁體中文 台灣 (zh-TW)</item>
+        <item>日本語 (ja)</item>
+        <item>한국어 (ko)</item>
+        <item>Bahasa Indonesia (id)</item>
+        <item>Беларуская (be)</item>
+        <item>Nederlands (nl)</item>
+        <item>Français (fr)</item>
+        <item>Deutsch (de)</item>
+        <item>Italiano (it)</item>
+        <item>Norsk Bokmål (nb-NO)</item>
+        <item>Português Brasil (pt-BR)</item>
+        <item>Русский (ru)</item>
+        <item>Español (es)</item>
+        <item>Українська (uk)</item>
+        <item>العربية (ar)</item>
+        <item>فارسی (fa)</item>
+        <item>Türkçe (tr)</item>
+    </string-array>
+
+    <string-array name="language_values">
+        <item>en</item>
+        <item>zh-CN</item>
+        <item>zh-HK</item>
+        <item>zh-TW</item>
+        <item>ja</item>
+        <item>ko</item>
+        <item>id</item>
+        <item>be</item>
+        <item>nl</item>
+        <item>fr</item>
+        <item>de</item>
+        <item>it</item>
+        <item>nb-NO</item>
+        <item>pt-BR</item>
+        <item>ru</item>
+        <item>es</item>
+        <item>uk</item>
+        <item>ar</item>
+        <item>fa</item>
+        <item>tr</item>
+    </string-array>
+
 </resources>

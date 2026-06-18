@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.os.SystemClock
 import android.provider.OpenableColumns
 import android.text.InputType
@@ -216,28 +218,42 @@ class ConfigurationFragment @JvmOverloads constructor(
             }
         }.attach()
 
+        var singleClickRunnable: Runnable? = null
+        val handler = Handler(Looper.getMainLooper())
         toolbar.setOnClickListener {
-            val fragment = getCurrentGroupFragment()
+            val fragment = getCurrentGroupFragment() ?: return@setOnClickListener
 
-            if (fragment != null) {
-                val selectedProxy = selectedItem?.id ?: DataStore.selectedProxy
-                val selectedProfileIndex =
-                    fragment.adapter!!.configurationIdList.indexOf(selectedProxy)
-                if (selectedProfileIndex != -1) {
-                    val layoutManager = fragment.layoutManager
-                    val first = layoutManager.findFirstVisibleItemPosition()
-                    val last = layoutManager.findLastVisibleItemPosition()
-
-                    if (selectedProfileIndex !in first..last) {
-                        fragment.configurationListView.scrollTo(selectedProfileIndex, true)
-                        return@setOnClickListener
-                    }
-
-                }
-
+            if (singleClickRunnable != null) {
+                handler.removeCallbacks(singleClickRunnable!!)
+                singleClickRunnable = null
                 fragment.configurationListView.scrollTo(0)
+                return@setOnClickListener
             }
 
+            singleClickRunnable = Runnable {
+                singleClickRunnable = null
+                val selectedProxy = selectedItem?.id ?: DataStore.selectedProxy
+                if (selectedProxy <= 0) return@Runnable
+                val profile = ProfileManager.getProfile(selectedProxy)
+                if (profile == null) return@Runnable
+                if (profile.groupId != DataStore.selectedGroup) {
+                    val targetIndex = adapter.groupList.indexOfFirst { it.id == profile.groupId }
+                    if (targetIndex >= 0) {
+                        groupPager.setCurrentItem(targetIndex, false)
+                        DataStore.selectedGroup = profile.groupId
+                        handler.postDelayed({
+                            val targetFragment = getCurrentGroupFragment() ?: return@postDelayed
+                            val idx = targetFragment.adapter!!.configurationIdList.indexOf(selectedProxy)
+                            if (idx != -1) targetFragment.configurationListView.scrollTo(idx, true)
+                        }, 300L)
+                    }
+                } else {
+                    val idx = fragment.adapter!!.configurationIdList.indexOf(selectedProxy)
+                    if (idx != -1) fragment.configurationListView.scrollTo(idx, true)
+                }
+            }
+
+            handler.postDelayed(singleClickRunnable!!, 300L)
         }
 
         DataStore.profileCacheStore.registerChangeListener(this)
@@ -647,7 +663,7 @@ class ConfigurationFragment @JvmOverloads constructor(
         test.notification = ConnectionTestNotification(
             requireContext(),
             "[${group.displayName()}] ${getString(R.string.connection_test)}"
-        )
+        ).also { SagerNet.activeTestNotification = it }
         val testJobs = mutableListOf<Job>()
 
         val mainJob = runOnDefaultDispatcher {
@@ -738,22 +754,22 @@ class ConfigurationFragment @JvmOverloads constructor(
 
                             if (icmpPing) {
                                 profile.status = 2
-                                profile.error = getString(R.string.connection_test_unreachable)
+                                profile.error = app.getString(R.string.connection_test_unreachable)
                             } else {
                                 profile.status = 2
                                 when {
                                     !message.contains("failed:") -> profile.error =
-                                        getString(R.string.connection_test_timeout)
+                                        app.getString(R.string.connection_test_timeout)
 
                                     else -> when {
                                         message.contains("ECONNREFUSED") -> {
                                             profile.error =
-                                                getString(R.string.connection_test_refused)
+                                                app.getString(R.string.connection_test_refused)
                                         }
 
                                         message.contains("ENETUNREACH") -> {
                                             profile.error =
-                                                getString(R.string.connection_test_unreachable)
+                                                app.getString(R.string.connection_test_unreachable)
                                         }
 
                                         else -> {
@@ -793,6 +809,7 @@ class ConfigurationFragment @JvmOverloads constructor(
                 }
                 GroupManager.postReload(DataStore.currentGroupId())
                 DataStore.runningTest = false
+                SagerNet.activeTestNotification = null
             }
         }
         test.minimize = {}
@@ -816,7 +833,7 @@ class ConfigurationFragment @JvmOverloads constructor(
         test.notification = ConnectionTestNotification(
             requireContext(),
             "[${group.displayName()}] ${getString(R.string.connection_test)}"
-        )
+        ).also { SagerNet.activeTestNotification = it }
         val testJobs = mutableListOf<Job>()
 
         val mainJob = runOnDefaultDispatcher {
@@ -876,7 +893,7 @@ class ConfigurationFragment @JvmOverloads constructor(
         }
         test.cancel = {
             test.dialogStatus.set(2)
-            dialog.dismiss()
+            try { dialog.dismiss() } catch (_: Exception) {}
             runOnDefaultDispatcher {
                 mainJob.cancel()
                 testJobs.forEach { it.cancel() }
@@ -898,15 +915,18 @@ class ConfigurationFragment @JvmOverloads constructor(
                 }
                 GroupManager.postReload(DataStore.currentGroupId())
                 DataStore.runningTest = false
+                SagerNet.activeTestNotification = null
             }
         }
         test.minimize = {
             test.dialogStatus.set(1)
-            test.notification = ConnectionTestNotification(
-                dialog.context,
-                "[${group.displayName()}] ${getString(R.string.connection_test)}"
-            )
-            dialog.hide()
+            test.notification = try {
+                ConnectionTestNotification(
+                    dialog.context,
+                    "[${group.displayName()}] ${app.getString(R.string.connection_test)}"
+                ).also { SagerNet.activeTestNotification = it }
+            } catch (_: Exception) { null }
+            try { dialog.hide() } catch (_: Exception) {}
         }
     }
 
@@ -1499,7 +1519,7 @@ class ConfigurationFragment @JvmOverloads constructor(
             val profileName: TextView = view.findViewById(R.id.profile_name)
             val profileType: TextView = view.findViewById(R.id.profile_type)
             val profileAddress: TextView = view.findViewById(R.id.profile_address)
-            val profileUrlTestIcon: ImageView = view.findViewById(R.id.profile_urltest_icon)
+            val profileUrlTestIcon: TextView = view.findViewById(R.id.profile_urltest_icon)
             val profileUrlTestLoading: ProgressBar = view.findViewById(R.id.profile_urltest_loading)
             val profileUrlTest: TextView = view.findViewById(R.id.profile_urltest)
             val profileStatus: TextView = view.findViewById(R.id.profile_status)
@@ -1607,12 +1627,12 @@ class ConfigurationFragment @JvmOverloads constructor(
                     val resultPing: Int
                     val resultError: String?
                     if (lastType == 2) {
-                        profileUrlTestIcon.setImageResource(R.drawable.ic_globe_24)
+                        profileUrlTestIcon.text = "\uD83C\uDF10"
                         resultStatus = proxyEntity.urlTestStatus
                         resultPing = proxyEntity.urlTestPing
                         resultError = proxyEntity.urlTestError
                     } else {
-                        profileUrlTestIcon.setImageResource(R.drawable.ic_bolt_24)
+                        profileUrlTestIcon.text = "\u26A1"
                         resultStatus = proxyEntity.status
                         resultPing = proxyEntity.ping
                         resultError = proxyEntity.error

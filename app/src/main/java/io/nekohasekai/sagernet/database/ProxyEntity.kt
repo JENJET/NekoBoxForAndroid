@@ -102,7 +102,7 @@ data class ProxyEntity(
 
         const val TYPE_CHAIN = 8
 
-        val chainName by lazy { app.getString(R.string.proxy_chain) }
+        fun chainName() = app.getString(R.string.proxy_chain)
 
         @JvmField
         val CREATOR = object : CREATOR<ProxyEntity>() {
@@ -209,7 +209,7 @@ data class ProxyEntity(
         TYPE_TUIC -> "TUIC"
         TYPE_SHADOWTLS -> "ShadowTLS"
         TYPE_ANYTLS -> "AnyTLS"
-        TYPE_CHAIN -> chainName
+        TYPE_CHAIN -> chainName()
         TYPE_NEKO -> nekoBean!!.displayType()
         TYPE_CONFIG -> configBean!!.displayType()
         else -> "Undefined type $type"

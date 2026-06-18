@@ -151,6 +151,7 @@ object Key {
 
     const val APP_TLS_VERSION = "appTLSVersion"
     const val ENABLE_CLASH_API = "enableClashAPI"
+    const val APP_LANGUAGE = "appLanguage"
 }
 
 object TunImplementation {
@@ -184,4 +185,5 @@ object Action {
 
     // const val SWITCH_WAKE_LOCK = "io.nekohasekai.sagernet.SWITCH_WAKELOCK"
     const val RESET_UPSTREAM_CONNECTIONS = "moe.nb4a.RESET_UPSTREAM_CONNECTIONS"
+    const val LOCALE_CHANGED = "moe.nb4a.LOCALE_CHANGED"
 }

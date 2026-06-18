@@ -29,6 +29,7 @@ import moe.matsuri.nb4a.utils.Util
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
+import java.text.SimpleDateFormat
 import java.util.*
 
 class BackupFragment : NamedFragment(R.layout.layout_backup) {
@@ -84,7 +85,7 @@ class BackupFragment : NamedFragment(R.layout.layout_backup) {
                 )
                 onMainDispatcher {
                     startFilesForResult(
-                        exportSettings, "nekobox_backup_${Date().toLocaleString()}.json"
+                        exportSettings, "nekobox_backup_${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())}.json"
                     )
                 }
             }
@@ -99,7 +100,7 @@ class BackupFragment : NamedFragment(R.layout.layout_backup) {
                 )
                 app.cacheDir.mkdirs()
                 val cacheFile = File(
-                    app.cacheDir, "nekobox_backup_${Date().toLocaleString()}.json"
+                    app.cacheDir, "nekobox_backup_${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())}.json"
                 )
                 cacheFile.writeText(content)
                 onMainDispatcher {
@@ -111,7 +112,7 @@ class BackupFragment : NamedFragment(R.layout.layout_backup) {
                                     Intent.EXTRA_STREAM, FileProvider.getUriForFile(
                                         app, BuildConfig.APPLICATION_ID + ".cache", cacheFile
                                     )
-                                ), app.getString(R.string.abc_shareactionprovider_share_with)
+                                ), requireContext().getString(R.string.abc_shareactionprovider_share_with)
                         )
                     )
                 }

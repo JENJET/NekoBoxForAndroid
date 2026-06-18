@@ -9,8 +9,10 @@ import android.os.Build
 import android.os.Bundle
 import android.os.RemoteException
 import android.view.KeyEvent
+import android.view.View
 import android.view.MenuItem
 import androidx.activity.addCallback
+import androidx.fragment.app.Fragment
 import androidx.annotation.IdRes
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -77,6 +79,10 @@ class MainActivity : ThemedActivity(),
 
         if (savedInstanceState == null) {
             displayFragmentWithId(R.id.nav_configuration)
+        } else {
+            supportFragmentManager.findFragmentById(R.id.fragment_holder)?.let {
+                updateStatsBarAndFab(it)
+            }
         }
         onBackPressedDispatcher.addCallback {
             if (supportFragmentManager.findFragmentById(R.id.fragment_holder) is ConfigurationFragment) {
@@ -187,12 +193,6 @@ class MainActivity : ThemedActivity(),
         if (name.isNullOrBlank()) return
 
         group.name = group.name.takeIf { !it.isNullOrBlank() }
-            ?: group.subscription?.link?.let { link ->
-                try {
-                    java.net.URL(link).host?.split(".")?.takeIf { it.size >= 2 }
-                        ?.let { parts -> parts[(parts.size - 1) / 2].replaceFirstChar { it.uppercase() } }
-                } catch (_: Exception) { null }
-            }
             ?: ("Subscription #" + System.currentTimeMillis())
 
         onMainDispatcher {
@@ -268,7 +268,7 @@ class MainActivity : ThemedActivity(),
         MaterialAlertDialogBuilder(this).setTitle(R.string.missing_plugin)
             .setMessage(
                 getString(
-                    R.string.profile_requiring_plugin, profileName, pluginEntity.displayName
+                    R.string.profile_requiring_plugin, profileName, pluginEntity.displayName()
                 )
             )
             .setPositiveButton(R.string.action_download) { _, _ ->
@@ -318,16 +318,24 @@ class MainActivity : ThemedActivity(),
     }
 
 
-    @SuppressLint("CommitTransaction")
-    fun displayFragment(fragment: ToolbarFragment) {
+    private fun updateStatsBarAndFab(fragment: Fragment) {
         if (fragment is ConfigurationFragment) {
             binding.stats.allowShow = true
+            binding.stats.visibility = View.VISIBLE
+            if (DataStore.serviceState.connected) {
+                binding.stats.performShow()
+            }
             binding.fab.show()
         } else if (!DataStore.showBottomBar) {
             binding.stats.allowShow = false
-            binding.stats.performHide()
+            binding.stats.visibility = View.INVISIBLE
             binding.fab.hide()
         }
+    }
+
+    @SuppressLint("CommitTransaction")
+    fun displayFragment(fragment: ToolbarFragment) {
+        updateStatsBarAndFab(fragment)
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragment_holder, fragment)
             .commitAllowingStateLoss()
@@ -442,6 +450,9 @@ class MainActivity : ThemedActivity(),
                     }.show()
                 }
             }
+        }
+        if (key == Key.PROFILE_ID) {
+            binding.stats.post { binding.stats.refreshServerInfo() }
         }
     }
 

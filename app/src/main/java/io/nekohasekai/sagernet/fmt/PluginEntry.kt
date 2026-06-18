@@ -5,18 +5,15 @@ import io.nekohasekai.sagernet.SagerNet
 
 enum class PluginEntry(
     val pluginId: String,
-    val displayName: String,
     val packageName: String, // for play and f-droid page
     val downloadSource: DownloadSource = DownloadSource()
 ) {
     TrojanGo(
         "trojan-go-plugin",
-        SagerNet.application.getString(R.string.action_trojan_go),
         "io.nekohasekai.sagernet.plugin.trojan_go"
     ),
     MieruProxy(
         "mieru-plugin",
-        SagerNet.application.getString(R.string.action_mieru),
         "moe.matsuri.exe.mieru",
         DownloadSource(
             playStore = false,
@@ -26,7 +23,6 @@ enum class PluginEntry(
     ),
     NaiveProxy(
         "naive-plugin",
-        SagerNet.application.getString(R.string.action_naive),
         "moe.matsuri.exe.naive",
         DownloadSource(
             playStore = false,
@@ -36,7 +32,6 @@ enum class PluginEntry(
     ),
     Hysteria(
         "hysteria-plugin",
-        SagerNet.application.getString(R.string.action_hysteria),
         "moe.matsuri.exe.hysteria",
         DownloadSource(
             playStore = false,
@@ -45,6 +40,15 @@ enum class PluginEntry(
         )
     ),
     ;
+
+    fun displayName(): String {
+        return SagerNet.application.getString(when (this) {
+            TrojanGo -> R.string.action_trojan_go
+            MieruProxy -> R.string.action_mieru
+            NaiveProxy -> R.string.action_naive
+            Hysteria -> R.string.action_hysteria
+        })
+    }
 
     data class DownloadSource(
         val playStore: Boolean = true,

@@ -4,8 +4,10 @@ import android.annotation.SuppressLint
 import android.content.DialogInterface
 import android.os.Bundle
 import android.view.Menu
+import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.ViewGroup.MarginLayoutParams
+import androidx.core.view.MenuProvider
 import android.widget.LinearLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.ViewCompat
@@ -26,6 +28,8 @@ import io.nekohasekai.sagernet.ktx.readableMessage
 import io.nekohasekai.sagernet.ktx.toStringPretty
 import io.nekohasekai.sagernet.ui.ThemedActivity
 import io.nekohasekai.sagernet.widget.ListListener
+import androidx.activity.OnBackPressedCallback
+import androidx.lifecycle.Lifecycle
 import moe.matsuri.nb4a.ui.ExtendedKeyboard
 import org.json.JSONObject
 
@@ -138,6 +142,32 @@ class ConfigEditActivity : ThemedActivity() {
         }
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root, ListListener)
+
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (dirty) {
+                    UnsavedChangesDialogFragment().apply { key() }.show(supportFragmentManager, null)
+                } else {
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                }
+            }
+        })
+
+        addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.profile_apply_menu, menu)
+            }
+            override fun onMenuItemSelected(item: MenuItem): Boolean {
+                return when (item.itemId) {
+                    R.id.action_apply -> {
+                        saveAndExit()
+                        true
+                    }
+                    else -> false
+                }
+            }
+        }, this, Lifecycle.State.RESUMED)
     }
 
     fun formatText(): String? {
@@ -165,29 +195,8 @@ class ConfigEditActivity : ThemedActivity() {
         }
     }
 
-    @Suppress("DEPRECATION")
-    override fun onBackPressed() {
-        if (dirty) UnsavedChangesDialogFragment().apply { key() }
-            .show(supportFragmentManager, null) else super.onBackPressed()
-    }
-
     override fun onSupportNavigateUp(): Boolean {
         if (!super.onSupportNavigateUp()) finish()
         return true
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.profile_apply_menu, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.action_apply -> {
-                saveAndExit()
-                return true
-            }
-        }
-        return super.onOptionsItemSelected(item)
     }
 }

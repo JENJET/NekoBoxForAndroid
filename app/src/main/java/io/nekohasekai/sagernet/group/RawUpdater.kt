@@ -69,7 +69,9 @@ object RawUpdater : GroupUpdater() {
                 setURL(subscription.link)
                 setUserAgent(subscription.customUserAgent.takeIf { it.isNotBlank() } ?: USER_AGENT)
             }.execute()
-            proxies = parseRaw(Util.getStringBox(response.contentString))
+            val rawBody = Util.getStringBox(response.contentString)
+            subscription.rawData = rawBody
+            proxies = parseRaw(rawBody)
                 ?: error(app.getString(R.string.no_proxies_found))
 
             subscription.subscriptionUserinfo =
@@ -80,9 +82,17 @@ object RawUpdater : GroupUpdater() {
                 var remoteName = Util.getStringBox(response.getHeader("content-disposition"))
                 if (remoteName.isNotBlank()) {
                     remoteName = Util.decodeFilename(remoteName)
-                    if (remoteName.isNotBlank()) {
-                        proxyGroup.name = remoteName
-                    }
+                }
+                if (remoteName.isBlank()) {
+                    remoteName = subscription.link?.let { link ->
+                        try {
+                            java.net.URL(link).host?.split(".")?.takeIf { it.size >= 2 }
+                                ?.let { parts -> parts[(parts.size - 1) / 2].uppercase() }
+                        } catch (_: Exception) { null }
+                    } ?: ""
+                }
+                if (remoteName.isNotBlank()) {
+                    proxyGroup.name = remoteName
                 }
             }
         }

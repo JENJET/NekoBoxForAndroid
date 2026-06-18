@@ -29,7 +29,8 @@ rem Parse arguments
 rem ============================================================
 set NO_LIBCORE=0
 set NO_GRADLE=0
-set FAST=0
+set FAST=1
+set NO_PAUSE=0
 set BUILD_TYPE=oss
 
 :parse_args
@@ -37,6 +38,8 @@ if "%~1"=="" goto :args_done
 if /i "%~1"=="-NoLibcore"  set NO_LIBCORE=1
 if /i "%~1"=="-NoGradle"   set NO_GRADLE=1
 if /i "%~1"=="-Fast"       set FAST=1
+if /i "%~1"=="-GomobileInit" set FAST=0
+if /i "%~1"=="-NoPause"    set NO_PAUSE=1
 if /i "%~1"=="-BuildType" (
     shift
     if /i "%~1"=="preview" set BUILD_TYPE=preview
@@ -170,7 +173,10 @@ if not exist "%GOMOBILE%" (
 )
 
 rem --- gomobile init ---
-if "%FAST%"=="0" (
+if "%FAST%"=="1" (
+    echo.
+    echo [SKIP] gomobile init ^(default, use -GomobileInit to run^)
+) else (
     echo.
     echo ^>^>^> gomobile init...
     "%GOMOBILE%" init
@@ -179,9 +185,6 @@ if "%FAST%"=="0" (
         exit /b 1
     )
     echo [OK] gomobile init done
-) else (
-    echo.
-    echo [SKIP] gomobile init ^(--Fast^)
 )
 
 rem ============================================================
@@ -396,14 +399,16 @@ if "%BUILD_TYPE%"=="oss" if "%NO_GRADLE%"=="0" (
 
 echo.
 echo Usage:
-echo   build.bat                     full build (libcore + gradle)
+echo   build.bat                     full build (libcore + gradle, skip gomobile init)
+echo   build.bat -GomobileInit       run gomobile init before libcore build
 echo   build.bat -NoGradle           build libcore only
 echo   build.bat -NoLibcore          rebuild APK only
-echo   build.bat -Fast               skip gomobile init
+echo   build.bat -Fast               alias for default (skip gomobile init)
+echo   build.bat -NoPause            skip pause at end
 echo   build.bat -BuildType preview  preview build
 echo.
 
 rem cleanup temp files
 if exist "%TEMP_DIR%" rmdir /s /q "%TEMP_DIR%"
 
-pause
+if "%NO_PAUSE%"=="0" pause

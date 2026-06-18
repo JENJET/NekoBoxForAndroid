@@ -162,15 +162,14 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1" />
 
-                <ImageView
+                <TextView
                     android:id="@+id/profile_urltest_icon"
-                    android:layout_width="16dp"
-                    android:layout_height="16dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:layout_marginStart="4dp"
                     android:layout_gravity="center_vertical"
-                    android:src="@drawable/ic_bolt_24"
-                    android:visibility="gone"
-                    android:importantForAccessibility="no" />
+                    android:textSize="13sp"
+                    android:visibility="gone" />
 
                 <ProgressBar
                     android:id="@+id/profile_urltest_loading"

@@ -34,9 +34,9 @@
     <string name="group_status_empty">Grupo vacío</string> 
     <string name="group_status_empty_subscription">Aún no actualizado</string> 
     <string name="group_status_proxies">%d proxys</string> 
-    <string name="group_status_proxies_subscription">%d proxys | Actualizado el %s</string> 
+    <string name="group_status_proxies_subscription">%1$d proxys | Actualizado el %2$s</string> 
     <string name="group_no_difference">%s: Sin diferencia</string> 
-    <string name="group_updated">%s: %d proxys actualizados</string> 
+    <string name="group_updated">%1$s: %2$d proxys actualizados</string> 
     <string name="group_show_diff">Diferencia</string> 
     <string name="group_diff">Diferencia (%s)</string> 
     <string name="group_delete_confirm_prompt">¿Seguro que quieres eliminar este grupo?</string> 
@@ -228,11 +228,11 @@
     <string name="add_profile_methods_scan_qr_code">Escanear código QR</string> 
     <string name="add_profile_methods_manual_settings">Ajustes manuales</string> 
     <plurals name="removed"> 
-        <item quantity="one">Eliminado</item> 
+        <item quantity="one">%d eliminado</item> 
         <item quantity="other">%d elementos eliminados</item> 
     </plurals> 
     <plurals name="added"> 
-        <item quantity="one">Añadido</item> 
+        <item quantity="one">%d añadido</item> 
         <item quantity="other">%d proxys añadidos</item> 
     </plurals> 
     <string name="undo">Deshacer</string>
@@ -317,7 +317,7 @@
     <string name="force_resolve">Forzar resolución</string> 
     <string name="force_resolve_sum">Resuelve todos los nombres de dominio a direcciones IP al actualizar. Host y SNI se agregarán automáticamente si es posible</string> 
     <string name="deduplication_sum">Eliminar configuraciones duplicadas al actualizar</string> 
-    <string name="raw">Raw</string> 
+    <string name="raw">Sin procesar</string> 
     <string name="update_settings">Ajustes de actualización</string> 
     <string name="auto_update">Actualización automática</string> 
     <string name="auto_update_delay">Retraso de actualización automática (en minutos)</string> 
@@ -326,7 +326,7 @@
     <string name="subscription_user_agent">Agente de usuario</string> 
     <string name="confirm">Confirmar</string> 
     <string name="missing_plugin">Complemento faltante</string> 
-    <string name="profile_requiring_plugin">El perfil %s requiere que se instale el complemento %s, pero no se encontró.</string> 
+    <string name="profile_requiring_plugin">El perfil %1$s requiere que se instale el complemento %2$s, pero no se encontró.</string> 
     <string name="action_learn_more">APRENDER MÁS</string> 
     <string name="action_download">DESCARGAR</string> 
     <string name="install_from_play_store">Instalar desde Play Store</string> 
@@ -342,7 +342,7 @@
     <string name="subscription_update_message">Actualizando %s…</string> 
     <string name="group_filter">Filtrar</string>
     <string name="subscription_used">%s usado</string>
-    <string name="subscription_traffic">%s usados ​​/ %s restantes</string> 
+    <string name="subscription_traffic">%1$s usados / %2$s restantes</string> 
     <string name="subscription_import">Importar suscripción</string> 
     <string name="subscription_import_message">¿Confirma que desea importar la suscripción %s? Si proviene de una fuente que no es de confianza, hacer esto puede provocar que se filtre su IP y su comportamiento.</string> 
     <string name="profile_import">Importar perfil</string> 
@@ -363,7 +363,7 @@
     <string name="group_order_origin">Origen</string> 
     <string name="group_order_by_name">Por nombre</string> 
     <string name="group_order_by_delay">Por retraso</string> 
-    <string name="plugin_exists_but_on_shit_system">El perfil %s requiere el complemento %s, pero el proveedor de su equipo patentado (por lo general, los gigantes del capital de vigilancia y el fabricante de malware) manipuló su Android e inutilizó el complemento.</string> 
+    <string name="plugin_exists_but_on_shit_system">El perfil %1$s requiere el complemento %2$s, pero el proveedor de su equipo patentado (por lo general, los gigantes del capital de vigilancia y el fabricante de malware) manipuló su Android e inutilizó el complemento.</string> 
  
     <string name="shadowsocks_plugin_simple_obfs">Simple Obfs (complemento de Android Shadowsocks)</string> 
     <string name="shadowsocks_plugin_v2ray">V2Ray (complemento de Android Shadowsocks)</string> 
@@ -449,6 +449,84 @@
  
     <string name="connection_test_delete_unavailable">Borrado no disponible</string>
     <string name="action_import_url">Importar desde URL</string>
+    <string name="ads">Publicidad</string>
+    <string name="allow_insecure_on_request_sum">Desactivar la verificación de certificados al actualizar suscripciones</string>
+    <string name="app_list_permission_denied">No se puede leer la lista de aplicaciones instaladas. Esto suele deberse a restricciones del sistema (por ejemplo, algunos fabricantes chinos). Conceda el permiso en la configuración del sistema.</string>
+    <string name="app_tls_version">Versión TLS mínima de suscripción</string>
+    <string name="auto_select_proxy_apps">Seleccionar aplicaciones proxy automáticamente</string>
+    <string name="auto_select_proxy_apps_message">Seleccionar aplicaciones proxy automáticamente borrará su selección actual.</string>
+    <string name="bypass_lan_in_core">Omitir LAN en el núcleo</string>
+    <string name="check_update_no">No se encontraron actualizaciones.</string>
+    <string name="check_update_preview">Buscar actualizaciones de vista previa</string>
+    <string name="check_update_release">Buscar actualizaciones de versión estable</string>
+    <string name="create_shortcut">Crear acceso directo</string>
+    <string name="custom_config_json">JSON de configuración personalizada</string>
+    <string name="custom_outbound_json">JSON de salida personalizada</string>
+    <string name="domain_strategy_for_direct">Estrategia de dominio para conexión directa</string>
+    <string name="domain_strategy_for_remote">Estrategia de dominio para conexión remota</string>
+    <string name="domain_strategy_for_server">Estrategia de dominio para dirección del servidor</string>
+    <string name="ech_config">Configuración de ECH</string>
+    <string name="ech_settings">Ajustes de ECH</string>
+    <string name="enable_clash_api">Activar Clash API</string>
+    <string name="enable_clash_api_summary">Proporcionar Clash API y panel yacd en el puerto local 9090</string>
+    <string name="enable_ech">Activar ECH</string>
+    <string name="enable_ech_sum">Activar ECH</string>
+    <string name="exe_prefer_provider">Proveedor de complemento preferido</string>
+    <string name="front_proxy">Proxy frontal</string>
+    <string name="global_allow_insecure">Permitir siempre conexiones inseguras</string>
+    <string name="group_not_subscription">El tipo de grupo no es una suscripción</string>
+    <string name="hop_interval">Intervalo de salto de puerto (segundos)</string>
+    <string name="http_upgrade_host">Host de HTTPUpgrade</string>
+    <string name="http_upgrade_path">Ruta de HTTPUpgrade</string>
+    <string name="hysteria_disable_mtu_discovery">Desactivar descubrimiento de MTU de ruta</string>
+    <string name="is_outbound_only">El JSON es solo de salida</string>
+    <string name="landing_proxy">Proxy de destino</string>
+    <string name="log_level">Nivel de registro</string>
+    <string name="log_level_help">Mantenga presionada la configuración para establecer el tamaño del búfer.</string>
+    <string name="menu_dashboard">Panel de sing-box</string>
+    <string name="minimize">Minimizar</string>
+    <string name="move">Mover</string>
+    <string name="mtu_help">Mantenga presionada la configuración para establecer MTU personalizado.</string>
+    <string name="mux_sum">Mux está diseñado para reducir la latencia de handshake TCP, no para aumentar el rendimiento. Usarlo para ver videos, descargar o probar velocidad suele ser contraproducente. Si el servidor no lo soporta, no podrá acceder a Internet.</string>
+    <string name="mux_type">Protocolo Mux</string>
+    <string name="need_restart">Reinicie la aplicación para aplicar los cambios</string>
+    <string name="network_change_reset_connections">Restablecer conexiones de salida al cambiar de red</string>
+    <string name="open_app_settings">Abrir configuración del sistema</string>
+    <string name="please_update">Su aplicación (%1$s) es demasiado antigua. Dejará de funcionar en %2$s. ¡Por favor, actualícela!</string>
+    <string name="please_update_force">Su aplicación (%1$s) es demasiado antigua y ha dejado de funcionar en %2$s. ¡Actualice inmediatamente!</string>
+    <string name="preview_subscription">Vista previa</string>
+    <string name="preview_version_hint">Esta aplicación es una versión preliminar y puede tener muchos problemas. Si no desea participar en las pruebas, descargue la versión estable desde GitHub.</string>
+    <string name="protocol_version">Versión del protocolo</string>
+    <string name="remove_duplicate">Eliminar servidores duplicados</string>
+    <string name="reset_connections">Restablecer conexiones</string>
+    <string name="reset_settings">Restablecer configuración predeterminada</string>
+    <string name="reset_settings_message">Restablecer la configuración predeterminada. Los datos de nodos, grupos, etc. se conservarán. Para borrar todos los datos, hágalo en la configuración del sistema.</string>
+    <string name="resolve_server">Resolver la dirección del servidor según la política IPv6</string>
+    <string name="route_opt_block_quic">Bloquear QUIC</string>
+    <string name="save">Guardar</string>
+    <string name="set_panel_url">Establecer URL del panel</string>
+    <string name="share_subscription">Compartir suscripción</string>
+    <string name="show_bottom_bar">Mostrar barra inferior como SagerNet</string>
+    <string name="show_group_in_notification">Mostrar nombre del grupo en la notificación</string>
+    <string name="sniff_override">Resultado de la inspección para la dirección de destino</string>
+    <string name="sniff_routing">Resultado de la inspección para el enrutamiento</string>
+    <string name="subscription_expire">Caduca: %s</string>
+    <string name="test_concurrency">Prueba de concurrencia</string>
+    <string name="tls_camouflage_settings">Ajustes de camuflaje TLS</string>
+    <string name="tuic_congestion_controller">Controlador de congestión</string>
+    <string name="tuic_disable_sni">Desactivar SNI</string>
+    <string name="tuic_reduce_rtt">Activar handshake QUIC 0-RTT</string>
+    <string name="tuic_udp_relay_mode">Modo de retransmisión UDP</string>
+    <string name="update_all_subscription">Actualizar todas las suscripciones</string>
+    <string name="update_current_subscription">Actualizar suscripción del grupo actual</string>
+    <string name="update_dialog_message">Versión actual: %1$s\nVersión disponible: %2$s\n¿Quiere descargarla?</string>
+    <string name="update_dialog_title">Nueva versión disponible</string>
+    <string name="use_selector">Usar selector</string>
+    <string name="utls_fingerprint">Huella digital uTLS</string>
+    <string name="wake_reset_connections">Restablecer conexiones de salida al despertar el dispositivo</string>
+    <string name="xtls_flow">Flow (subprotocolo VLESS)</string>
     <string name="geoip_api">Dirección de prueba de información de conexión</string>
+    <string name="app_language">Idioma</string>
 </resources>
+
 
