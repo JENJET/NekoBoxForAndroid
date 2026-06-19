@@ -294,7 +294,7 @@
     <string name="route_warn">Переконайтеся, що ви прочитали документацію перед додаванням власних правил, інакше ви можете не підключитися до Інтернету.</string>
     <string name="lines">%d рядків</string>
     <string name="night_mode">Нічний режим</string>
-    <string name="follow_system">Як у системі</string>
+    <string name="follow_system">Автовибір</string>
     <string name="enable">Увімкнути</string>
     <string name="disable">Вимкнути</string>
     <string name="auto">Авто</string>

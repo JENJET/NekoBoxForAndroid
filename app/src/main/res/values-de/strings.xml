@@ -168,7 +168,7 @@
     <string name="extra_headers">Zusätzliche Header</string>
     <string name="fakedns_message">App-Neustart nach Stopp nötig</string>
     <string name="file_manager_missing">Dateiauswahl fehlt</string>
-    <string name="follow_system">Systemstandard</string>
+    <string name="follow_system">Automatisch</string>
     <string name="force_resolve">Erzwungene Auflösung</string>
     <string name="force_resolve_sum">Domains bei Update in IPs auflösen</string>
     <string name="forward_success">Proxy gestartet.</string>
@@ -413,7 +413,7 @@
     <string name="sniff_override">Sniffing für Zieladresse</string>
     <string name="sniff_routing">Sniffing für Routing</string>
     <string name="speed">%s/s</string>
-    <string name="speed_detail">Intervall Geschwindigkeitsbenachrichtigung</string>
+    <string name="speed_detail">Proxy: %1$s↑ %2$s↓\nDirekt: %3$s↑ %4$s↓</string>
     <string name="speed_interval">Geschwindigkeitsbenachrichtigungs-Aktualisierungsintervall</string>
     <string name="ssh_auth_type_none">Keine</string>
     <string name="ssh_private_key">Privater Schlüssel</string>

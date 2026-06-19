@@ -296,7 +296,7 @@
     <string name="sniff_override">Sniffing para destino</string>
     <string name="sniff_routing">Sniffing para roteamento</string>
     <string name="speed">%s/s</string>
-    <string name="speed_detail">靻嶋弰 鞎岆 臧勱博</string>
+    <string name="speed_detail">Proxy: %1$s↑ %2$s↓\nDireto: %3$s↑ %4$s↓</string>
     <string name="ss_cat">Configuracoes Shadowsocks</string>
     <string name="ssh_auth_type_none">Nenhum</string>
     <string name="ssh_private_key_passphrase">Frase secreta chave privada</string>
@@ -321,7 +321,7 @@
     <string name="tls">Usar TLS</string>
     <string name="tls_camouflage_settings">Configuracoes camuflagem TLS</string>
     <string name="tools_network">Rede</string>
-    <string name="traffic">韸鸽灅頂?鞀る媹頃?頇滌劚頇攟Habilitar sniffing de trafego</string>
+    <string name="traffic">%1$s↑ %2$s↓</string>
     <string name="transproxy_mode">Modo proxy transparente</string>
     <string name="tuic_congestion_controller">Controle congestionamento</string>
     <string name="tuic_disable_sni">Desabilitar SNI</string>
@@ -387,7 +387,7 @@
     <string name="encryption">Criptografia</string>
     <string name="exe_prefer_provider">Provedor preferido do plugin</string>
     <string name="experimental_settings">Experimental</string>
-    <string name="follow_system">Seguir sistema</string>
+    <string name="follow_system">Seleção automática</string>
     <string name="forward_success">Proxy iniciado.</string>
     <string name="front_proxy">Proxy frontal</string>
     <string name="generating">Gerando…</string>

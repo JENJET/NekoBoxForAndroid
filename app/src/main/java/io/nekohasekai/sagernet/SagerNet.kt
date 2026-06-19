@@ -45,6 +45,7 @@ class SagerNet : Application(),
         super.attachBaseContext(base)
 
         application = this
+        systemLocale = Locale.getDefault()
     }
 
     private var localeResources: Resources? = null
@@ -148,6 +149,7 @@ class SagerNet : Application(),
     companion object {
 
         lateinit var application: SagerNet
+        lateinit var systemLocale: Locale
 
         val isTv by lazy {
             uiMode.currentModeType == Configuration.UI_MODE_TYPE_TELEVISION

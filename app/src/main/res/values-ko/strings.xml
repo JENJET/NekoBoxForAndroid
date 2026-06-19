@@ -162,7 +162,7 @@
     <string name="extra_headers">추가 헤더</string>
     <string name="fakedns_message">프록시 중지 후 네트워크 재연결을 위해 앱 재시작 필요</string>
     <string name="file_manager_missing">Android 표준 파일 선택기가 없습니다. Material Files 등을 설치하세요.</string>
-    <string name="follow_system">시스템 따르기</string>
+    <string name="follow_system">자동 선택</string>
     <string name="force_resolve">강제 확인</string>
     <string name="force_resolve_sum">업데이트 시 모든 도메인을 IP로 확인</string>
     <string name="forward_success">프록시가 시작되었습니다.</string>

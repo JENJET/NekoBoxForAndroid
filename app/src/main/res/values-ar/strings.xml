@@ -234,7 +234,7 @@
     <string name="error_title">خطأ</string>
     <string name="experimental_settings">تجريبي</string>
     <string name="extra_headers">رؤوس إضافية</string>
-    <string name="follow_system">اتباع النظام</string>
+    <string name="follow_system">اختيار تلقائي</string>
     <string name="force_resolve">فرض الحل</string>
     <string name="forward_success">بدأ البروكسي.</string>
     <string name="general_settings">إعدادات التطبيق</string>

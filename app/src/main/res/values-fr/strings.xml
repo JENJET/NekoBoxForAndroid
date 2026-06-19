@@ -301,7 +301,7 @@ Voulez-vous télécharger ?</string>
     <string name="error_title">Erreur</string>
     <string name="experimental_settings">Expérimental</string>
     <string name="extra_headers">En-têtes supplémentaires</string>
-    <string name="follow_system">Suivre le système</string>
+    <string name="follow_system">Auto-sélection</string>
     <string name="general_settings">Paramètres de l\'application</string>
     <string name="generating">Génération…</string>
     <string name="geoip_api">Adresse de test des informations de connexion</string>

@@ -295,7 +295,7 @@
  در غیر این صورت ممکن است نتوانید به اینترنت وصل شوید.</string>
     <string name="lines">%d خط</string>
     <string name="night_mode">حالت تاریک</string>
-    <string name="follow_system">مانند سیستم</string>
+    <string name="follow_system">انتخاب خودکار</string>
     <string name="enable">فعال</string>
     <string name="disable">غیرفعال</string>
     <string name="auto">خودکار</string>

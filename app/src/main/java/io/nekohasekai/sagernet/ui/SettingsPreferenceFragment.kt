@@ -151,16 +151,18 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
         }
 
         findPreference<ListPreference>(Key.APP_LANGUAGE)?.let { languagePref ->
-            val systemLocale = Locale.getDefault()
-            val langValues = resources.getStringArray(R.array.language_values)
-            val langEntries = resources.getStringArray(R.array.language_entries)
+            val systemLocale = SagerNet.systemLocale
+            val baseResources = SagerNet.application.baseContext.resources
+            val langValues = baseResources.getStringArray(R.array.language_values)
+            val langEntries = baseResources.getStringArray(R.array.language_entries)
             val idx = langValues.indexOfFirst { systemLocale.language == Locale.forLanguageTag(it).language }
             val systemLangName = if (idx >= 0) {
                 langEntries[idx].substringBefore(" (")
             } else {
-                systemLocale.getDisplayLanguage(Locale.ENGLISH)
+                systemLocale.getDisplayLanguage(Locale.ENGLISH).ifBlank { systemLocale.language }
             }
-            val dynamicFirstEntry = "${getString(R.string.follow_system)} ($systemLangName)"
+            val systemFollowSystem = baseResources.getString(R.string.follow_system)
+            val dynamicFirstEntry = "$systemFollowSystem ($systemLangName)"
             val entryList = mutableListOf<CharSequence>(dynamicFirstEntry)
             languagePref.entries?.let { entryList.addAll(it) }
             languagePref.entries = entryList.toTypedArray()
@@ -225,5 +227,4 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat() {
             globalCustomConfig.notifyChanged()
         }
     }
-
 }

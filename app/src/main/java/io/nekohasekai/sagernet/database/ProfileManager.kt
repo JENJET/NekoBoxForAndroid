@@ -206,6 +206,7 @@ object ProfileManager {
                 fuckedCountry += "ir:Iran"
                 fuckedCountry += "ru:Russia"
             }
+            val isChinese = Locale.getDefault() == Locale.SIMPLIFIED_CHINESE
             for (c in fuckedCountry) {
                 val country = c.substringBefore(":")
                 val displayCountry = c.substringAfter(":")
@@ -220,14 +221,16 @@ object ProfileManager {
                     RuleEntity(
                         name = app.getString(R.string.route_bypass_domain, displayCountry),
                         domains = "geosite:$country",
-                        outbound = -1
+                        outbound = -1,
+                        enabled = isChinese && country == "cn"
                     ), false
                 )
                 createRule(
                     RuleEntity(
                         name = app.getString(R.string.route_bypass_ip, displayCountry),
                         ip = "geoip:$country",
-                        outbound = -1
+                        outbound = -1,
+                        enabled = isChinese && country == "cn"
                     ), false
                 )
             }

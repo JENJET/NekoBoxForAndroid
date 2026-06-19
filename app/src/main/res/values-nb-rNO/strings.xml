@@ -235,7 +235,7 @@
     <string name="error_title">Feil</string>
     <string name="experimental_settings">Eksperimentell</string>
     <string name="extra_headers">Ekstra overskrifter</string>
-    <string name="follow_system">Følg systemet</string>
+    <string name="follow_system">Automatisk</string>
     <string name="force_resolve">Tving oppløsning</string>
     <string name="forward_success">Proxy startet.</string>
     <string name="general_settings">Appinnstillinger</string>

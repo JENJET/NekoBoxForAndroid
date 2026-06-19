@@ -160,7 +160,7 @@
 <string name="extra_headers">Дополнительные заголовки</string>
 <string name="fakedns_message">Может вызвать необходимость перезапуска других приложений для повторного подключения к сети после остановки прокси</string>
 <string name="file_manager_missing">На вашем устройстве отсутствует стандартный селектор файлов Android, установите его, например Material Files.</string>
-<string name="follow_system">Использовать системную тему</string>
+<string name="follow_system">Автовыбор</string>
 <string name="force_resolve">Принудительно разрешать доменные имена</string>
 <string name="force_resolve_sum">При обновлении преобразовать все доменные имена в IP-адреса. Хост и SNI будут добавлены автоматически, если это возможно</string>
 <string name="forward_success">Прокси запустился.</string>
@@ -412,8 +412,7 @@
 <string name="sniff_override">Результат проверки для адрес назначения</string>
 <string name="sniff_routing">Перехватывать результат для Маршрутизации</string>
 <string name="speed">%s/с</string>
-<string name="speed_detail">Прокси ：%1$s↑ %2$s↓ 
-\nПрямой ：%3$s↑%4$s↓</string>
+<string name="speed_detail">Прокси ：%1$s↑ %2$s↓\nПрямой ：%3$s↑%4$s↓</string>
 <string name="speed_interval">Интервал обновления уведомлений о скорости</string>
 <string name="ss_cat">Настройки Shadowsocks</string>
 <string name="ssh_auth_type_none">Без аутентификации</string>

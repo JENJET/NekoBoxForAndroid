@@ -55,8 +55,7 @@
     <string name="ws_browser_forwarding_sum">转发相应的 WebSockets 到浏览器.</string>
     <string name="speed_interval">速度通知更新间隔</string>
     <string name="traffic">%1$s↑ %2$s↓</string>
-    <string name="speed_detail">代理： %1$s↑ %2$s↓
-        \n直连： %3$s↑ %4$s↓</string>
+    <string name="speed_detail">代理： %1$s↑ %2$s↓\n直连： %3$s↑ %4$s↓</string>
     <string name="speed">%s/s</string>
     <string name="connection_test_testing">测试中…</string>
     <string name="connection_test_available">连接成功: HTTPS 握手耗时 %dms</string>
@@ -250,7 +249,7 @@
     <string name="night_mode">夜间模式</string>
     <string name="enable">启用</string>
     <string name="auto">自动</string>
-    <string name="follow_system">跟随系统</string>
+    <string name="follow_system">自动选择</string>
     <string name="security_settings">TLS 安全设置</string>
     <string name="allow_insecure">允许不安全的连接</string>
     <string name="allow_insecure_sum">禁用证书检查. 启用后该配置安全性相当于明文</string>

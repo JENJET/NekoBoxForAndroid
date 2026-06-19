@@ -304,7 +304,7 @@
     <string name="sniff_override">Sniffing voor bestemming</string>
     <string name="sniff_routing">Sniffing voor routing</string>
     <string name="speed">%s/s</string>
-    <string name="speed_detail">Intervallo notifica velocita</string>
+    <string name="speed_detail">Proxy: %1$s↑ %2$s↓\nDirect: %3$s↑ %4$s↓</string>
     <string name="ss_cat">Shadowsocks instellingen</string>
     <string name="ssh_auth_type_none">Geen</string>
     <string name="ssh_private_key_passphrase">Wachtwoordzin prive sleutel</string>
@@ -395,7 +395,7 @@
     <string name="encryption">Versleuteling</string>
     <string name="exe_prefer_provider">Plugin Voorkeursprovider</string>
     <string name="experimental_settings">Experimenteel</string>
-    <string name="follow_system">Systeem volgen</string>
+    <string name="follow_system">Automatisch</string>
     <string name="forward_success">Proxy gestart.</string>
     <string name="front_proxy">Front proxy</string>
     <string name="generating">Genereren…</string>

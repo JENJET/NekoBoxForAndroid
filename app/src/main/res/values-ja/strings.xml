@@ -142,7 +142,7 @@
     <string name="experimental_settings">実験的</string>
     <string name="extra_headers">追加ヘッダー</string>
     <string name="file_manager_missing">お使いのデバイスにAndroid標準ファイルセレクタがありません。Material Filesなどをインストールしてください。</string>
-    <string name="follow_system">システムに従う</string>
+    <string name="follow_system">自動選択</string>
     <string name="force_resolve">強制解決</string>
     <string name="force_resolve_sum">更新時にすべてのドメインをIPアドレスに解決します。可能であれば、ホストとSNI値は自動的に上書きされます</string>
     <string name="forward_success">プロキシが起動しました。</string>

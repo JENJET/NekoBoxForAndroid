@@ -274,7 +274,7 @@
     <string name="route_warn">Asegúrese de haber leído la documentación antes de agregar reglas personalizadas; de lo contrario, es posible que no pueda conectarse a Internet.</string> 
     <string name="lines">%d líneas</string> 
     <string name="night_mode">Modo nocturno</string> 
-    <string name="follow_system">Seguir sistema</string> 
+    <string name="follow_system">Selección automática</string> 
     <string name="enable">Permitir</string> 
     <string name="disable">Desactivar</string> 
     <string name="auto">Automático</string> 

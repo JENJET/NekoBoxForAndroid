@@ -140,7 +140,7 @@
     <string name="experimental_settings">Эксперыментальнае</string>
     <string name="extra_headers">Дадатковыя загалоўкі</string>
     <string name="file_manager_missing">На вашай прыладзе адсутнічае стандартны выбаршчык файлаў Android. Калі ласка, усталюйце яго, напрыклад Material Files.</string>
-    <string name="follow_system">Следаваць сістэме</string>
+    <string name="follow_system">Аўтавыбар</string>
     <string name="force_resolve">Прымусовае вырашэнне</string>
     <string name="force_resolve_sum">Вырашаць усе дамены ў IP-адрасы пры абнаўленні. Калі магчыма, значэнні хоста і SNI будуць аўтаматычна заменены</string>
     <string name="forward_success">Проксі запушчаны.</string>

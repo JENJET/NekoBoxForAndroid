@@ -110,7 +110,7 @@ Harap berikan izin di pengaturan sistem.</string>
     <string name="exe_prefer_provider">Penyedia plugin pilihan</string>
     <string name="experimental_settings">Eksperimental</string>
     <string name="file_manager_missing">Perangkat Anda tidak memiliki pemilih file standar Android. Silakan instal satu, seperti Material Files.</string>
-    <string name="follow_system">Ikuti sistem</string>
+    <string name="follow_system">Pilih otomatis</string>
     <string name="force_resolve">Resolusi paksa</string>
     <string name="force_resolve_sum">Selesaikan semua domain ke alamat IP saat memperbarui. Jika memungkinkan, nilai host dan SNI akan ditimpa secara otomatis</string>
     <string name="front_proxy">Proksi depan</string>

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="acquire_wake_lock">Acquisisci wake lock</string>
     <string name="acquire_wake_lock_summary">Mantieni la CPU accesa</string>
@@ -304,7 +304,7 @@
     <string name="sniff_override">Sniffing per destinazione</string>
     <string name="sniff_routing">Sniffing per routing</string>
     <string name="speed">%s/s</string>
-    <string name="speed_detail">Proxy: %1鈫?%2鈫揬nDiretto: %3鈫?%4鈫搢Proxy: %1鈫?%2鈫揬nDirect: %3鈫?%4鈫搢頂勲鞁? %1鈫?%2鈫揬n歆侅爲: %3鈫?%4鈫搢Proxy: %1鈫?%2鈫揬nDireto: %3鈫?%4鈫搢Proxy: %1鈫?%2鈫揬nDirekt: %3鈫?%4鈫?speed_interval</string>
+    <string name="speed_detail">Proxy: %1$s↑ %2$s↓\nDiretto: %3$s↑ %4$s↓</string>
     <string name="ss_cat">Impostazioni Shadowsocks</string>
     <string name="ssh_auth_type_none">Nessuna</string>
     <string name="ssh_private_key_passphrase">Frase segreta chiave privata</string>
@@ -330,7 +330,7 @@
     <string name="tls">Usa TLS</string>
     <string name="tls_camouflage_settings">Impostazioni camuffamento TLS</string>
     <string name="tools_network">Rete</string>
-    <string name="traffic">%1鈫?%2鈫搢%1鈫?%2鈫搢%1鈫?%2鈫搢%1鈫?%2鈫搢%1鈫?%2鈫?traffic_sniffing</string>
+    <string name="traffic">%1$s↑ %2$s↓</string>
     <string name="transproxy_mode">Modalita transparent proxy</string>
     <string name="tuic_congestion_controller">Controllo congestione</string>
     <string name="tuic_disable_sni">Disabilita SNI</string>
@@ -395,7 +395,7 @@
     <string name="encryption">Crittografia</string>
     <string name="exe_prefer_provider">Provider preferito plugin</string>
     <string name="experimental_settings">Sperimentale</string>
-    <string name="follow_system">Segui sistema</string>
+    <string name="follow_system">Selezione automatica</string>
     <string name="forward_success">Proxy avviato.</string>
     <string name="front_proxy">Proxy frontale</string>
     <string name="generating">Generazione…</string>

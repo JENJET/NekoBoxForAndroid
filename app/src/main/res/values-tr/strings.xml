@@ -222,7 +222,7 @@
     <string name="error_title">Hata</string>
     <string name="experimental_settings">Deneysel</string>
     <string name="extra_headers">Ek başlıklar</string>
-    <string name="follow_system">Sistemi takip et</string>
+    <string name="follow_system">Otomatik seç</string>
     <string name="force_resolve">Çözmeye zorla</string>
     <string name="forward_success">Proxy başlatıldı.</string>
     <string name="general_settings">Uygulama ayarları</string>

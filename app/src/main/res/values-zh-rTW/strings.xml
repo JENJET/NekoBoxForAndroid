@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="acquire_wake_lock_summary">保持 CPU 開啟</string>
     <string name="action_copy">複製</string>
@@ -214,7 +214,7 @@
     <string name="error_title">錯誤</string>
     <string name="experimental_settings">實驗性</string>
     <string name="extra_headers">額外標頭</string>
-    <string name="follow_system">跟隨系統</string>
+    <string name="follow_system">自動選擇</string>
     <string name="force_resolve">強制解析</string>
     <string name="forward_success">代理已啟動。</string>
     <string name="general_settings">應用程式設定</string>
